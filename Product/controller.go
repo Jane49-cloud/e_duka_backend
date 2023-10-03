@@ -108,7 +108,7 @@ func GetAllProducts(context *gin.Context) {
 	if productid != "" {
 		query = "product_id=" + productid
 
-		products, err = Fetchproducts(query)
+		product, err := Fetchproducts(query)
 		if err != nil {
 			context.JSON(http.StatusBadRequest, gin.H{
 				"error":   err.Error(),
@@ -117,8 +117,9 @@ func GetAllProducts(context *gin.Context) {
 			})
 		} else {
 			data = gin.H{
-				"success":  true,
-				"products": products,
+				"success": true,
+				"product": product,
+				"id":      productid,
 			}
 		}
 	} else {
