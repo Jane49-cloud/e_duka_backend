@@ -87,3 +87,48 @@ func GetAllBrands(context *gin.Context) {
 		context.JSON(http.StatusOK, response)
 	}
 }
+func DeleteBrand(context *gin.Context) {
+	brandname := context.Param("name")
+	// check if brand exist
+	brand, err := FetchSingleBrand(brandname)
+	if err != nil {
+		response := models.Reply{
+			Message: "Could not validate request",
+			Error:   err.Error(),
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
+	} else if brand.BrandName == "" {
+		response := models.Reply{
+			Message: "brand does not exist in the database",
+			Success: false,
+			Data:    brand,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
+	} else {
+		brandDeleted, err := UpdateBrand(brandname, models.Brand{
+			Isdeleted: true,
+		})
+
+		if err != nil {
+			response := models.Reply{
+				Error:   err.Error(),
+				Message: "Error occurred deleting the brand",
+				Success: false,
+				Data:    brandDeleted,
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
+		} else {
+			response := models.Reply{
+				Message: "Brand deleted successfully",
+				Success: true,
+				Data:    brandDeleted,
+			}
+			context.JSON(http.StatusOK, response)
+			return
+		}
+	}
+}

@@ -10,6 +10,7 @@ type Brand struct {
 	BrandID          string `gorm:"primary_key;column:brand_id;not null;unique" json:"brandid"`
 	BrandName        string `gorm:"column:brand_name;unique;not null" json:"brandname"`
 	Imageurl         string `gorm:"column:image_url" json:"imageurl"`
+	Isdeleted        bool   `gorm:"column:is_deleted;default:false" json:"isdeleted"`
 	TotalProducts    int    `gorm:"default:0;column:total_products;" json:"totalproducts"`
 	TotalEngagements int    `gorm:"default:0;column:total_engagements" json:"totalengagements"`
 }

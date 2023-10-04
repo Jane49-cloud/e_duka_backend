@@ -37,7 +37,7 @@ func ServeApplication() {
 	images.Imagesroutes(router)
 	comments.Commentroutes(router)
 	category.CategoryRoutes(router)
-	brands.BranRoutes(router)
+	brands.BrandRoutes(router)
 
 	router.Run(":8000")
 	fmt.Println("Server running on port 8000")
