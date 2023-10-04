@@ -5,6 +5,8 @@ import (
 	"log"
 
 	product "eleliafrika.com/backend/Product"
+	"eleliafrika.com/backend/brands"
+	"eleliafrika.com/backend/category"
 	"eleliafrika.com/backend/comments"
 	"eleliafrika.com/backend/database"
 	"eleliafrika.com/backend/images"
@@ -16,7 +18,7 @@ import (
 func LoadDatabase() {
 	database.Connect()
 	// database.Database.AutoMigrate(&models.User{}, &models.Brand{}, &models.Category{}, &models.SubCategory{}, &models.Comment{}, &models.Product{})
-	// database.Database.AutoMigrate(&models.Comment{})
+	// database.Database.AutoMigrate(&models.Brand{})
 }
 
 func LoadEnv() {
@@ -34,6 +36,8 @@ func ServeApplication() {
 	product.PostRoutes(router)
 	images.Imagesroutes(router)
 	comments.Commentroutes(router)
+	category.CategoryRoutes(router)
+	brands.BranRoutes(router)
 
 	router.Run(":8000")
 	fmt.Println("Server running on port 8000")

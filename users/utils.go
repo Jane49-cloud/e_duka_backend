@@ -40,8 +40,6 @@ func ValidateJWT(context *gin.Context) error {
 func GetToken(context *gin.Context) (*jwt.Token, error) {
 	tokenFromUser := context.Request.Header.Get("x-access-token")
 
-	fmt.Printf("This is token %v\n", tokenFromUser)
-
 	token, err := jwt.Parse(tokenFromUser, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
