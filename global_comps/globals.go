@@ -10,6 +10,7 @@ import (
 	"eleliafrika.com/backend/comments"
 	"eleliafrika.com/backend/database"
 	"eleliafrika.com/backend/images"
+	subcategory "eleliafrika.com/backend/subcategories"
 	"eleliafrika.com/backend/users"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -19,7 +20,7 @@ import (
 func LoadDatabase() {
 	database.Connect()
 	// database.Database.AutoMigrate(&models.User{}, &models.Brand{}, &models.Category{}, &models.SubCategory{}, &models.Comment{}, &models.Product{})
-	// database.Database.AutoMigrate(&models.Category{})
+	// database.Database.AutoMigrate(&models.SubCategory{})
 }
 
 func LoadEnv() {
@@ -39,6 +40,7 @@ func ServeApplication() {
 	images.Imagesroutes(router)
 	comments.Commentroutes(router)
 	category.CategoryRoutes(router)
+	subcategory.SubCategoryRoutes(router)
 	brands.BrandRoutes(router)
 
 	router.Run(":8000")
