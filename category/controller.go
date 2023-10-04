@@ -1,6 +1,7 @@
 package category
 
 import (
+	"fmt"
 	"net/http"
 
 	"eleliafrika.com/backend/models"
@@ -19,6 +20,7 @@ func CreateCategory(context *gin.Context) {
 		})
 		return
 	} else {
+		fmt.Printf("category exists \n%v", categoryInput.CategoryName)
 		// check if category already exists
 		category, err := FetchSingleCategory(categoryInput.CategoryName)
 		if err != nil {
@@ -30,6 +32,7 @@ func CreateCategory(context *gin.Context) {
 			context.JSON(http.StatusBadRequest, response)
 			return
 		} else if category.CategoryName != "" {
+
 			response := models.Reply{
 				Message: "category already exists",
 				Data:    category,
@@ -93,7 +96,7 @@ func DeleteCategory(context *gin.Context) {
 	categoryname := context.Param("name")
 
 	// check if category exists
-	category, err := FetchSingleCategory(categoryname)
+	categoryExist, err := FetchSingleCategory(categoryname)
 	if err != nil {
 		response := models.Reply{
 			Message: "error checking the validity of query",
@@ -102,14 +105,14 @@ func DeleteCategory(context *gin.Context) {
 		}
 		context.JSON(http.StatusBadRequest, response)
 		return
-	} else if category.CategoryName == "" {
+	} else if categoryExist.CategoryName == "" {
 		response := models.Reply{
 			Message: "the category requested is missing!!please confirm the validity of the request",
 			Success: false,
 		}
 		context.JSON(http.StatusBadRequest, response)
 		return
-	} else if category.IsDeleted {
+	} else if categoryExist.IsDeleted {
 		response := models.Reply{
 			Message: "the category requested is already deleted!!please confirm the validity of the request",
 			Success: false,
@@ -117,12 +120,28 @@ func DeleteCategory(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response)
 		return
 	} else {
-		response := models.Reply{
-			Message: "delete operation succesful!!category deleted",
-			Success: true,
+		fmt.Printf("this is the category %v/n", categoryExist)
+		deletedCategory, err := UpdateCategory(categoryname, models.Category{
+			IsDeleted: true,
+		})
+		if err != nil {
+			response := models.Reply{
+				Message: "Could not delete the category",
+				Success: false,
+				Error:   err.Error(),
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
+		} else {
+
+			response := models.Reply{
+				Message: "delete operation succesful!!category deleted",
+				Success: true,
+				Data:    deletedCategory,
+			}
+			context.JSON(http.StatusOK, response)
+			return
 		}
-		context.JSON(http.StatusOK, response)
-		return
 	}
 
 }

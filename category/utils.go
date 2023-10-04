@@ -18,7 +18,7 @@ func FetchAllCategories() ([]models.Category, error) {
 
 func FetchSingleCategory(categoryname string) (models.Category, error) {
 	var category models.Category
-	err := database.Database.Find(&category).Error
+	err := database.Database.Where("category_name=?", categoryname).Find(&category).Error
 	if err != nil {
 		return models.Category{}, err
 	}
@@ -29,7 +29,7 @@ func UpdateCategory(categoryname string, update models.Category) (models.Categor
 	var category models.Category
 	result := database.Database.Model(category).Where("category_name=?", categoryname).Updates(update)
 	if result.RowsAffected == 0 {
-		return models.Category{}, errors.New("could not update the brand")
+		return models.Category{}, errors.New("could not update the category")
 	}
 	return category, nil
 }
