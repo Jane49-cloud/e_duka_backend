@@ -16,6 +16,8 @@ func Register(context *gin.Context) {
 	if err := context.ShouldBindJSON(&input); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	} else {
+
 	}
 
 	// get current data to save user with
