@@ -6,9 +6,10 @@ import (
 )
 
 func CategoryRoutes(router *gin.Engine) {
-	categoryRoutes := router.Group("/category")
+	categoryRoutes := router.Group("/categories")
 	{
 		categoryRoutes.POST("/addcategory", users.JWTAuthMiddleWare(), CreateCategory)
 		categoryRoutes.GET("/getcategories", GetCategories)
+		categoryRoutes.POST("/delete/:name", users.JWTAuthMiddleWare(), DeleteCategory)
 	}
 }

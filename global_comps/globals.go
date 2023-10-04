@@ -11,6 +11,7 @@ import (
 	"eleliafrika.com/backend/database"
 	"eleliafrika.com/backend/images"
 	"eleliafrika.com/backend/users"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -18,7 +19,7 @@ import (
 func LoadDatabase() {
 	database.Connect()
 	// database.Database.AutoMigrate(&models.User{}, &models.Brand{}, &models.Category{}, &models.SubCategory{}, &models.Comment{}, &models.Product{})
-	// database.Database.AutoMigrate(&models.Brand{})
+	// database.Database.AutoMigrate(&models.Category{})
 }
 
 func LoadEnv() {
@@ -31,6 +32,7 @@ func LoadEnv() {
 
 func ServeApplication() {
 	router := gin.Default()
+	router.Use(cors.Default())
 
 	users.AuthRoutes(router)
 	product.PostRoutes(router)

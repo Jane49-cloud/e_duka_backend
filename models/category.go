@@ -10,6 +10,7 @@ type Category struct {
 	CategoryID    string `gorm:"primary_key;column:category_id;not null;" json:"categoryid"`
 	CategoryName  string `gorm:"column:category_name;not null;" json:"categoryname"`
 	CategoryImage string `gorm:"" json:"categoryimage"`
+	IsDeleted     bool   `gorm:"column:is_deleted;default:false" json:"isdeleted"`
 	TotalProducts int32  `gorm:"default:0" json:"totalproducts"`
 	TotalRevenue  int32  `gorm:"default:0" json:"totalrevenue"`
 }
