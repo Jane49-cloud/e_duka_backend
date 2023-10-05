@@ -2,6 +2,7 @@ package brands
 
 import (
 	"errors"
+	"regexp"
 
 	"eleliafrika.com/backend/database"
 	"eleliafrika.com/backend/models"
@@ -35,4 +36,15 @@ func UpdateBrand(brandname string, update models.Brand) (models.Brand, error) {
 	}
 	return updatedbrand, nil
 
+}
+
+func ValidatebrandInput(brand *models.Brand) (bool, error) {
+	charPattern := "[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>?]"
+	if len(brand.BrandName) < 3 {
+		return false, errors.New("brand name is too short")
+	} else if regexp.MustCompile(charPattern).MatchString(brand.BrandName) {
+		return false, errors.New("brand name cannot contain special characters")
+	}
+
+	return true, nil
 }

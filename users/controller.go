@@ -144,10 +144,12 @@ func Login(context *gin.Context) {
 		user, err := FindUserByEmail(input.Email)
 
 		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{
-				"error":   err.Error(),
-				"success": false,
-			})
+			response := models.Reply{
+				Message: "Error fetching user",
+				Error:   err.Error(),
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
 			return
 		}
 

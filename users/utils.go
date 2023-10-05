@@ -141,7 +141,6 @@ func ValidateRegisterInput(user *RegisterInput) (bool, error) {
 
 func ValidateLoginInput(user *LoginInput) (bool, error) {
 	userDetails := []string{user.Email, user.Password}
-	fmt.Printf("validating login input\n%v", user)
 	charPattern := "[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>?]"
 	numPattern := "[0-9]"
 	capPattern := "[A-Z]"

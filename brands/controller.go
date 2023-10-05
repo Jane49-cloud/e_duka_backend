@@ -18,6 +18,23 @@ func AddBrand(context *gin.Context) {
 			Success: false,
 		}
 		context.JSON(http.StatusBadRequest, response)
+	}
+	success, err := ValidatebrandInput(&brandInput)
+	if err != nil {
+		response := models.Reply{
+			Message: "error validating user input",
+			Error:   err.Error(),
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
+	} else if !success {
+		response := models.Reply{
+			Message: "error validating user input for brand",
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
 	} else {
 
 		// check if brand already exists
