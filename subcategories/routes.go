@@ -9,7 +9,7 @@ func SubCategoryRoutes(router *gin.Engine) {
 	categoryRoutes := router.Group("/subcategories")
 	{
 		categoryRoutes.POST("/addsubcategory", users.JWTAuthMiddleWare(), CreateSubCategory)
-		categoryRoutes.GET("/getsubcategories", GetCategories)
-		categoryRoutes.POST("/delete/:name", users.JWTAuthMiddleWare(), DeleteCategory)
+		categoryRoutes.GET("/getsubcategories/:name", GetSubCategories)
+		categoryRoutes.POST("/delete/:name", users.JWTAuthMiddleWare(), DeleteSubCategory)
 	}
 }

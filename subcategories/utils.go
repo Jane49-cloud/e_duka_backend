@@ -8,9 +8,9 @@ import (
 	"eleliafrika.com/backend/models"
 )
 
-func FetchAllSubCategories() ([]models.SubCategory, error) {
+func FetchAllSubCategories(categoryname string) ([]models.SubCategory, error) {
 	var subcategories []models.SubCategory
-	err := database.Database.Where("is_deleted", false).Find(&subcategories).Error
+	err := database.Database.Where("parent_category=?", categoryname).Where("is_deleted", false).Find(&subcategories).Error
 	if err != nil {
 		return []models.SubCategory{}, err
 	}

@@ -7,5 +7,6 @@ func AuthRoutes(router *gin.Engine) {
 	{
 		authRoutes.POST("/signup", Register)
 		authRoutes.POST("/signin", Login)
+		authRoutes.GET("/getuser", JWTAuthMiddleWare(), GetSingleUser)
 	}
 }

@@ -117,8 +117,9 @@ func CreateSubCategory(context *gin.Context) {
 
 }
 
-func GetCategories(context *gin.Context) {
-	categories, err := FetchAllSubCategories()
+func GetSubCategories(context *gin.Context) {
+	categoryname := context.Param("name")
+	subCategories, err := FetchAllSubCategories(categoryname)
 	if err != nil {
 		response := models.Reply{
 			Error:   err.Error(),
@@ -130,13 +131,13 @@ func GetCategories(context *gin.Context) {
 		response := models.Reply{
 			Message: "fetched sub categories succesful",
 			Success: true,
-			Data:    categories,
+			Data:    subCategories,
 		}
 		context.JSON(http.StatusOK, response)
 	}
 }
 
-func DeleteCategory(context *gin.Context) {
+func DeleteSubCategory(context *gin.Context) {
 	subcategoryname := context.Param("name")
 
 	// check if category exists

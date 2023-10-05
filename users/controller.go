@@ -173,6 +173,7 @@ func Login(context *gin.Context) {
 				"success": false,
 				"message": "Error occured while generating the token",
 			})
+			return
 
 		}
 
@@ -181,5 +182,45 @@ func Login(context *gin.Context) {
 			"message": "Authentication successful",
 			"token":   token,
 		})
+	}
+}
+
+func GetSingleUser(context *gin.Context) {
+	user, err := CurrentUser(context)
+	if err != nil {
+		response := models.Reply{
+			Message: "error fetching current user",
+			Error:   err.Error(),
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
+	} else {
+		if user.Firstname == "" {
+			response := models.Reply{
+				Message: "user does not exist",
+				Error:   err.Error(),
+				Success: false,
+			}
+			context.JSON(http.StatusOK, response)
+			return
+		} else {
+			userData := models.User{
+				Firstname:    user.Firstname,
+				Middlename:   user.Middlename,
+				Lastname:     user.Lastname,
+				Email:        user.Email,
+				UserImage:    user.UserImage,
+				UserLocation: user.UserLocation,
+				UserID:       user.UserID,
+			}
+			response := models.Reply{
+				Message: "Succesfully fetched the user",
+				Success: true,
+				Data:    userData,
+			}
+			context.JSON(http.StatusOK, response)
+			return
+		}
 	}
 }
