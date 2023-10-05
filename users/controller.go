@@ -16,8 +16,17 @@ func Register(context *gin.Context) {
 	if err := context.ShouldBindJSON(&input); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
-	} else {
-
+	}
+	success, err := ValidateRegisterInput(&input)
+	if !success {
+		response := models.Reply{
+			Message: "Error validating user",
+			Error:   err.Error(),
+			Success: false,
+			Data:    input,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
 	}
 
 	// get current data to save user with
@@ -56,10 +65,13 @@ func Register(context *gin.Context) {
 
 		savedUser, err := user.Save()
 		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{
-				"error":   err.Error(),
-				"success": false,
-			})
+			response := models.Reply{
+				Message: "Error creating user",
+				Error:   err.Error(),
+				Success: false,
+				Data:    user,
+			}
+			context.JSON(http.StatusBadRequest, response)
 			return
 		}
 		// generate token directly on succesfuly register

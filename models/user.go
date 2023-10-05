@@ -38,11 +38,13 @@ type User struct {
 
 // function to create new user
 func (user *User) Save() (*User, error) {
+
 	err := database.Database.Create(&user).Error
 	if err != nil {
 		return &User{}, err
 	}
-	return user, nil
+	return &User{}, nil
+
 }
 
 // hash the password before saving the user in the database

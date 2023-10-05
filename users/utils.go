@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
+	"strings"
 	"time"
+	"unicode"
 
 	"eleliafrika.com/backend/models"
 	"github.com/gin-gonic/gin"
@@ -76,4 +79,62 @@ func CurrentUser(context *gin.Context) (models.User, error) {
 		return models.User{}, err
 	}
 	return user, nil
+}
+
+func ValidateRegisterInput(user *RegisterInput) (bool, error) {
+	userDetails := []string{user.Email, user.Firstname, user.Lastname, user.UserLocation, user.UserImage, user.Phone, user.Password}
+	charPattern := "[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>?]"
+	numPattern := "[0-9]"
+	capPattern := "[A-Z]"
+	for _, value := range userDetails {
+		if value == user.Email {
+			if len(value) < 8 {
+				return false, errors.New("invalid email format!email should contain @, . and should longer than 8 characters")
+			} else if !strings.Contains(user.Email, "@") {
+				return false, errors.New("invalid email format!email should contain @, . and should longer than 8 characters")
+			} else if !strings.Contains(user.Email, ".") {
+				return false, errors.New("invalid email format!email should contain @, . and should longer than 8 characters")
+			}
+		} else if value == user.Phone {
+			if len(value) < 10 {
+				return false, errors.New("phone number should be atleast 10 characters long")
+			} else {
+				for _, char := range user.Phone {
+					if !unicode.IsNumber(char) {
+						return false, errors.New("phone number can only contain numbers")
+					}
+				}
+			}
+		} else if value == user.Password {
+
+			if len(value) < 8 {
+				return false, errors.New("password is too short")
+			} else if !regexp.MustCompile(charPattern).MatchString(user.Password) {
+				return false, errors.New("password must contain atleast one special character")
+			} else if !regexp.MustCompile(numPattern).MatchString(user.Password) {
+				return false, errors.New("password must contain atleast numerical digit")
+			} else if !regexp.MustCompile(capPattern).MatchString(user.Password) {
+				return false, errors.New("password must contain a capital letter")
+			}
+		} else if len(value) < 3 {
+			return false, errors.New("invalid input length for field")
+		} else {
+			if regexp.MustCompile(numPattern).MatchString(user.Firstname) {
+				return false, errors.New("first name cannot contain numbers")
+			} else if regexp.MustCompile(charPattern).MatchString(user.Firstname) {
+				return false, errors.New("first name cannot contain special characters")
+			}
+			if regexp.MustCompile(numPattern).MatchString(user.Middlename) {
+				return false, errors.New("middle name cannot contain numbers")
+			} else if regexp.MustCompile(charPattern).MatchString(user.Middlename) {
+				return false, errors.New("middle name cannot contain special characters")
+			}
+			if regexp.MustCompile(numPattern).MatchString(user.Lastname) {
+				return false, errors.New("last name cannot contain numbers")
+			} else if regexp.MustCompile(charPattern).MatchString(user.Lastname) {
+				return false, errors.New("last name cannot contain special characters")
+			}
+		}
+	}
+	return true, nil
 }
