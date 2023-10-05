@@ -138,3 +138,34 @@ func ValidateRegisterInput(user *RegisterInput) (bool, error) {
 	}
 	return true, nil
 }
+
+func ValidateLoginInput(user *LoginInput) (bool, error) {
+	userDetails := []string{user.Email, user.Password}
+	fmt.Printf("validating login input\n%v", user)
+	charPattern := "[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>?]"
+	numPattern := "[0-9]"
+	capPattern := "[A-Z]"
+	for _, value := range userDetails {
+		if value == user.Email {
+			if len(value) < 8 {
+				return false, errors.New("invalid email format!email should contain @, . and should longer than 8 characters")
+			} else if !strings.Contains(user.Email, "@") {
+				return false, errors.New("invalid email format!email should contain @, . and should longer than 8 characters")
+			} else if !strings.Contains(user.Email, ".") {
+				return false, errors.New("invalid email format!email should contain @, . and should longer than 8 characters")
+			}
+		} else if value == user.Password {
+
+			if len(value) < 8 {
+				return false, errors.New("password is too short")
+			} else if !regexp.MustCompile(charPattern).MatchString(user.Password) {
+				return false, errors.New("password must contain atleast one special character")
+			} else if !regexp.MustCompile(numPattern).MatchString(user.Password) {
+				return false, errors.New("password must contain atleast numerical digit")
+			} else if !regexp.MustCompile(capPattern).MatchString(user.Password) {
+				return false, errors.New("password must contain a capital letter")
+			}
+		}
+	}
+	return true, nil
+}

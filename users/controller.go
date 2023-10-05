@@ -18,12 +18,22 @@ func Register(context *gin.Context) {
 		return
 	}
 	success, err := ValidateRegisterInput(&input)
-	if !success {
+	if err != nil {
 		response := models.Reply{
 			Message: "Error validating user",
 			Error:   err.Error(),
 			Success: false,
 			Data:    input,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
+	}
+	if !success {
+		response := models.Reply{
+			Message: "Error validating user",
+			Success: false,
+			Data:    input,
+			Error:   err.Error(),
 		}
 		context.JSON(http.StatusBadRequest, response)
 		return
@@ -99,48 +109,75 @@ func Login(context *gin.Context) {
 	var input LoginInput
 
 	if err := context.ShouldBindJSON(&input); err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{
-			"error":   err.Error(),
-			"success": false,
-		})
+		response := models.Reply{
+			Message: "error binding the user input",
+			Error:   err.Error(),
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
-
-	// check if user exists
-
-	user, err := FindUserByEmail(input.Email)
-
+	// check validity of user input
+	success, err := ValidateLoginInput(&input)
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{
-			"error":   err.Error(),
-			"success": false,
-		})
+		response := models.Reply{
+			Message: "Error validating user input",
+			Error:   err.Error(),
+			Success: false,
+			Data:    input,
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
-	}
-
-	// validate the password password passed with the harsh on db
-
-	err = user.ValidatePassword(input.Password)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "user": user})
+	} else if !success {
+		response := models.Reply{
+			Message: "Error validating user",
+			Error:   err.Error(),
+			Success: false,
+			Data:    input,
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
-	}
+	} else {
 
-	// generate jwt if error does not exists
-	token, err := GenerateJWT(user)
+		// check if user exists
 
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"message": "Error occured while generating the token",
+		user, err := FindUserByEmail(input.Email)
+
+		if err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{
+				"error":   err.Error(),
+				"success": false,
+			})
+			return
+		}
+
+		// validate the password password passed with the harsh on db
+
+		err = user.ValidatePassword(input.Password)
+		if err != nil {
+			response := models.Reply{
+				Message: "incorrect password",
+				Success: false,
+				Error:   err.Error()}
+			context.JSON(http.StatusBadRequest, response)
+			return
+		}
+
+		// generate jwt if error does not exists
+		token, err := GenerateJWT(user)
+
+		if err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{
+				"success": false,
+				"message": "Error occured while generating the token",
+			})
+
+		}
+
+		context.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"message": "Authentication successful",
+			"token":   token,
 		})
-
 	}
-
-	context.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Authentication successful",
-		"token":   token,
-	})
-
 }
