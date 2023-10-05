@@ -21,6 +21,23 @@ func CreateSubCategory(context *gin.Context) {
 		}
 		context.JSON(http.StatusBadRequest, response)
 		return
+	}
+	success, err := ValidateSubCategoryInput(&subcategoryInput)
+	if err != nil {
+		response := models.Reply{
+			Message: "error validating user input",
+			Error:   err.Error(),
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
+	} else if !success {
+		response := models.Reply{
+			Message: "error validating user input for sub category",
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
 	} else {
 		// check if the parent category exists
 		parentcategory, err := category.FetchSingleCategory(subcategoryInput.ParentCategory)
@@ -71,6 +88,7 @@ func CreateSubCategory(context *gin.Context) {
 						SubCategoryID:    categoryuuid.String(),
 						SubCategoryName:  subcategoryInput.SubCategoryName,
 						SubCategoryImage: subcategoryInput.SubCategoryImage,
+						ParentCategory:   subcategoryInput.ParentCategory,
 					}
 
 					category, err := newSubCategory.Save()

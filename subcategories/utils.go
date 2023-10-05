@@ -2,6 +2,7 @@ package subcategory
 
 import (
 	"errors"
+	"regexp"
 
 	"eleliafrika.com/backend/database"
 	"eleliafrika.com/backend/models"
@@ -32,4 +33,14 @@ func UpdateSubCategory(subcategoryname string, update models.SubCategory) (model
 		return models.SubCategory{}, errors.New("could not update the category")
 	}
 	return subcategory, nil
+}
+
+func ValidateSubCategoryInput(subcategory *models.SubCategory) (bool, error) {
+	charPattern := "[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>?]"
+	if len(subcategory.SubCategoryName) < 3 {
+		return false, errors.New("category name is too short")
+	} else if regexp.MustCompile(charPattern).MatchString(subcategory.SubCategoryName) {
+		return false, errors.New("category name cannot contain special characters")
+	}
+	return true, nil
 }

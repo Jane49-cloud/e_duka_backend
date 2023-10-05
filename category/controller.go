@@ -19,8 +19,25 @@ func CreateCategory(context *gin.Context) {
 			"message":              "Wrong input from user",
 		})
 		return
+	}
+	success, err := ValidateCategoryInput(&categoryInput)
+	if err != nil {
+		response := models.Reply{
+			Message: "error validating user input",
+			Error:   err.Error(),
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
+	} else if !success {
+		response := models.Reply{
+			Message: "error validating user input for brand",
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
 	} else {
-		fmt.Printf("category exists \n%v", categoryInput.CategoryName)
+
 		// check if category already exists
 		category, err := FetchSingleCategory(categoryInput.CategoryName)
 		if err != nil {
