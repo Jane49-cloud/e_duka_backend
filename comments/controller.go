@@ -21,44 +21,65 @@ func MakeComment(context *gin.Context) {
 			"message": "could not make comments",
 		})
 	}
-
-	commentuuid := uuid.New()
-	currentTime := time.Now()
-	formattedTime := currentTime.Format("2006-01-02 15:04:05")
-	user, err := users.CurrentUser(context)
-
+	success, err := ValidateCommentInput(&commentinput)
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"message": "could not find user",
-		})
+		response := models.Reply{
+			Message: "Error validating user input",
+			Error:   err.Error(),
+			Success: false,
+			Data:    commentinput,
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
-	}
-	comment := models.Comment{
-		CommentID:     commentuuid.String(),
-		ProductID:     commentinput.ProductID,
-		UserID:        user.UserID,
-		Comment:       commentinput.Comment,
-		DateCommented: formattedTime,
-	}
-
-	commentMade, err := comment.Save()
-
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{
-			"error":   err.Error(),
-			"success": false,
-			"message": "Error saving the comment",
-		})
+	} else if !success {
+		response := models.Reply{
+			Message: "Error validating user input",
+			Error:   err.Error(),
+			Success: false,
+			Data:    commentinput,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
 	} else {
-		context.JSON(http.StatusCreated, gin.H{
-			"success": true,
-			"message": "Comment made",
-			"comment": commentMade,
-		})
+
+		commentuuid := uuid.New()
+		currentTime := time.Now()
+		formattedTime := currentTime.Format("2006-01-02 15:04:05")
+		user, err := users.CurrentUser(context)
+
+		if err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{
+				"success": false,
+				"message": "could not find user",
+			})
+			return
+		}
+		comment := models.Comment{
+			CommentID:     commentuuid.String(),
+			ProductID:     commentinput.ProductID,
+			UserID:        user.UserID,
+			Comment:       commentinput.Comment,
+			DateCommented: formattedTime,
+		}
+
+		commentMade, err := comment.Save()
+
+		if err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{
+				"error":   err.Error(),
+				"success": false,
+				"message": "Error saving the comment",
+			})
+		} else {
+			context.JSON(http.StatusCreated, gin.H{
+				"success": true,
+				"message": "Comment made",
+				"comment": commentMade,
+			})
+
+		}
 
 	}
-
 }
 func GetComments(context *gin.Context) {
 	productid := context.Param("id")

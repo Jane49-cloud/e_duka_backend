@@ -2,6 +2,7 @@ package comments
 
 import (
 	"errors"
+	"regexp"
 
 	"eleliafrika.com/backend/database"
 	"eleliafrika.com/backend/models"
@@ -39,4 +40,18 @@ func FetchComment(commentid string) (models.Comment, error) {
 		return models.Comment{}, err
 	}
 	return commentExists, nil
+}
+
+func ValidateCommentInput(comment *Commentinput) (bool, error) {
+	charPattern := "[!@#$%&*\\-=\\[\\]|,.<>?]"
+	if len(comment.Comment) < 5 {
+		return false, errors.New("comment too short")
+	} else if regexp.MustCompile(charPattern).MatchString(comment.Comment) {
+		return false, errors.New("comment cannot contain some special characters")
+	}
+
+	if len(comment.ProductID) < 5 {
+		return false, errors.New("product id too short")
+	}
+	return true, nil
 }
