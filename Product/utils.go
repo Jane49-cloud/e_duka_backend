@@ -2,6 +2,7 @@ package product
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"unicode"
 
@@ -9,28 +10,19 @@ import (
 	"eleliafrika.com/backend/models"
 )
 
-func FindAllProducts() ([]models.Product, error) {
-	var products []models.Product
-	err := database.Database.Find(&products).Error
-	if err != nil {
-		return []models.Product{}, err
-
-	}
-	return products, nil
-}
-func FindSingleProduct(productid string) (models.Product, error) {
+func FindSingleProduct(query string) (models.Product, error) {
 	var product models.Product
-	err := database.Database.Where("product_id=?", productid).Find(&product).Error
+	err := database.Database.Where(query).Find(&product).Error
 	if err != nil {
 		return models.Product{}, err
 
 	}
 	return product, nil
 }
-func Fetchproducts(query string) ([]models.Product, error) {
+func Fetchproducts() ([]models.Product, error) {
 	var productList []models.Product
 
-	err := database.Database.Where(query).Find(&productList).Error
+	err := database.Database.Find(&productList).Error
 	if err != nil {
 		return []models.Product{}, err
 	}
@@ -39,7 +31,7 @@ func Fetchproducts(query string) ([]models.Product, error) {
 
 func ValidateProductInput(product *AddProductInput) (bool, error) {
 	productDetails := []string{product.ProductName, product.ProductPrice, product.ProductDescription, product.MainImage, product.ProductType, product.Brand, product.Category, product.SubCategory}
-	charPattern := "[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>?]"
+	charPattern := "[!@#$%^&*()_+\\-=\\[\\]{};:\\\\|,.<>?]"
 	for _, value := range productDetails {
 		if value == product.ProductName {
 			if len(value) < 3 {
@@ -100,4 +92,14 @@ func ValidateProductInput(product *AddProductInput) (bool, error) {
 		}
 	}
 	return true, nil
+}
+func UpdateProductUtil(query string, update models.Product) (models.Product, error) {
+	var updatedProduct models.Product
+
+	result := database.Database.Model(&updatedProduct).Where(query).Updates(update)
+	fmt.Printf("id\n%v\n", result)
+	if result.RowsAffected == 0 {
+		return models.Product{}, errors.New("could not update the product right now")
+	}
+	return updatedProduct, nil
 }

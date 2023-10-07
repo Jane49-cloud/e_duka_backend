@@ -20,7 +20,7 @@ import (
 func LoadDatabase() {
 	database.Connect()
 	// database.Database.AutoMigrate(&models.User{}, &models.Brand{}, &models.Category{}, &models.SubCategory{}, &models.Comment{}, &models.Product{})
-	// database.Database.AutoMigrate(&models.SubCategory{})
+	// database.Database.AutoMigrate(&models.Comment{})
 }
 
 func LoadEnv() {
@@ -33,7 +33,11 @@ func LoadEnv() {
 
 func ServeApplication() {
 	router := gin.Default()
-	router.Use(cors.Default())
+
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+
+	router.Use(cors.New(config))
 
 	users.AuthRoutes(router)
 	product.PostRoutes(router)

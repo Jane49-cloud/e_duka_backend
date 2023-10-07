@@ -1,10 +1,10 @@
 package comments
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
-	product "eleliafrika.com/backend/Product"
 	"eleliafrika.com/backend/models"
 	"eleliafrika.com/backend/users"
 	"github.com/gin-gonic/gin"
@@ -100,74 +100,56 @@ func GetComments(context *gin.Context) {
 
 }
 func DeleteComment(context *gin.Context) {
-	var commentinput models.Commentinput
+	commentId := context.Param("id")
+	query := "comment_id=" + commentId
 
-	if err := context.ShouldBindJSON(&commentinput); err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"err":     err.Error(),
-			"message": "Error could not delete the comment due to bad body",
-		})
-	}
-
-	// check if product exists and is visible to the users
-	productExists, err := product.FindSingleProduct(commentinput.ProductID)
+	// check if the comment exist before deleting comment
+	commentExists, err := FetchComment(query)
+	fmt.Printf("this is comment\n%v\n", commentExists)
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"error":   err,
-			"message": "an error occurred while fetching the product related to the comment",
-		})
-	} else if productExists.ProductID == "" {
-		context.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"message": "The product is either inactive, deleted or simply does not exist",
-		})
-
-	} else {
-
-		// check if the comment exist before deleting comment
-		commentExists, err := FetchComment(commentinput.CommentID)
-		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{
-				"success": false,
-				"error":   err,
-				"message": "an error occurred",
-			})
-			return
-		} else if commentExists.CommentID == "" {
-			context.JSON(http.StatusOK, gin.H{
-				"success": "false",
-				"message": "Could not find the comment",
-			})
-			return
-		} else {
-			if commentExists.Isdeleted {
-				context.JSON(http.StatusOK, gin.H{
-					"message": "Comment already deleted",
-					"success": false,
-				})
-			} else {
-				commentDeleted, err := DeleteCommentUtil(commentinput.CommentID, models.Comment{
-					Isdeleted: true,
-				})
-
-				if err != nil {
-					context.JSON(http.StatusBadRequest, gin.H{
-						"message": "Could not delete comment",
-						"comment": commentDeleted,
-						"id":      commentinput.CommentID,
-						"error":   err.Error(),
-					})
-				} else {
-					context.JSON(http.StatusOK, gin.H{
-						"exist":   commentExists,
-						"message": "Comment succesfully deleted",
-					})
-				}
-			}
-
+		response := models.Reply{
+			Message: "an error occured during fetching comment",
+			Error:   err.Error(),
+			Success: false,
 		}
-	}
+		context.JSON(http.StatusBadRequest, response)
+		return
+	} else if commentExists.CommentID == "" {
+		response := models.Reply{
+			Message: "comment does not exist",
+			Success: false,
+		}
+		context.JSON(http.StatusOK, response)
+		return
+	} else {
+		if commentExists.Isdeleted {
+			response := models.Reply{
+				Message: "comment already deleted",
+				Success: false,
+			}
+			context.JSON(http.StatusOK, response)
+		} else {
+			fmt.Printf("id\n%s\n", commentId)
+			commentDeleted, err := DeleteCommentUtil(query, models.Comment{
+				Isdeleted: true,
+			})
 
+			if err != nil {
+				response := models.Reply{
+					Message: "Could not delete comment",
+					Error:   err.Error(),
+					Success: false,
+				}
+				context.JSON(http.StatusBadRequest, response)
+			} else {
+				response := models.Reply{
+					Message: "comment deleted succesfully",
+					Data:    commentDeleted,
+					Success: true,
+				}
+				context.JSON(http.StatusOK, response)
+			}
+		}
+
+	}
 }

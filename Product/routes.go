@@ -12,7 +12,8 @@ func PostRoutes(router *gin.Engine) {
 	{
 		authRoutes.POST("/addproduct", users.JWTAuthMiddleWare(), AddProduct)
 		authRoutes.GET("/getproducts", GetAllProducts)
-		authRoutes.GET("/getproducts/single/", GetAllProducts)
+		authRoutes.GET("/getproducts/single/", GetSingleProduct)
+		authRoutes.POST("/updateproduct/", UpdateProduct)
 		authRoutes.GET("/getimages", images.Getimages)
 	}
 }

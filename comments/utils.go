@@ -24,18 +24,18 @@ func GetProductComments(productid string) ([]models.Comment, error) {
 	return comments, nil
 }
 
-func DeleteCommentUtil(commentId string, update models.Comment) (models.Comment, error) {
+func DeleteCommentUtil(query string, update models.Comment) (models.Comment, error) {
 	var deletedComment models.Comment
-	result := database.Database.Model(deletedComment).Where("comment_id=?", commentId).Updates(update)
+	result := database.Database.Model(&deletedComment).Where(query).Updates(update)
 	if result.RowsAffected == 0 {
 		return models.Comment{}, errors.New("could not delete the comment")
 	}
 	return deletedComment, nil
 }
 
-func FetchComment(commentid string) (models.Comment, error) {
+func FetchComment(query string) (models.Comment, error) {
 	var commentExists models.Comment
-	err := database.Database.Where("comment_id=?", commentid).Find(&commentExists).Error
+	err := database.Database.Where(query).Find(&commentExists).Error
 	if err != nil {
 		return models.Comment{}, err
 	}
