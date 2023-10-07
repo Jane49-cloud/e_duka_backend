@@ -33,9 +33,10 @@ func LoadEnv() {
 
 func ServeApplication() {
 	router := gin.Default()
-
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
+	config.AllowHeaders = []string{"Content-Type", "x-access-token"}
+	router.Use(cors.New(config))
 
 	router.Use(cors.New(config))
 
