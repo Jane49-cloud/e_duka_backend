@@ -167,7 +167,7 @@ func GetSingleMainAd(context *gin.Context) {
 		}
 		context.JSON(http.StatusOK, response)
 		return
-	} else if !singlead.IsActive {
+	} else if !singlead.AdActive {
 		response := models.Reply{
 			Message: "the ad you are fetchin has been deactivated",
 			Success: true,
@@ -185,6 +185,220 @@ func GetSingleMainAd(context *gin.Context) {
 	}
 
 }
-func DeleteteMainAd(context *gin.Context) {
+func DeleteMainAd(context *gin.Context) {
+	adid := context.Query("id")
+	query := "ad_id=" + adid
 
+	// check if ad exists and is not deleted or inactive
+	adExist, err := GetSingleMainAdUtil(query)
+	if err != nil {
+		response := models.Reply{
+			Message: "error fetching the ad",
+			Error:   err.Error(),
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
+	} else if adExist.AdName == "" {
+		response := models.Reply{
+			Message: "ad does not exist",
+			Success: true,
+		}
+		context.JSON(http.StatusOK, response)
+		return
+	} else if adExist.IsDeleted {
+		response := models.Reply{
+			Message: "ad is already deleted",
+			Success: true,
+		}
+		context.JSON(http.StatusOK, response)
+		return
+	} else {
+		deletedAd, err := UpdateMainAdutil(query, models.MainAd{
+			IsDeleted: true,
+		})
+		if err != nil {
+			response := models.Reply{
+				Message: "error deleting the ad",
+				Error:   err.Error(),
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
+		} else {
+			response := models.Reply{
+				Message: "ad has been deleted succesfully",
+				Success: true,
+				Data:    deletedAd,
+			}
+			context.JSON(http.StatusOK, response)
+			return
+		}
+
+	}
+}
+
+// func RestoreMainAd(context *gin.Context) {
+// 	adid := context.Query("id")
+// 	query := "ad_id=" + adid
+
+// 	// check if ad exists and is not deleted or inactive
+// 	adExist, err := GetSingleMainAdUtil(query)
+// 	if err != nil {
+// 		response := models.Reply{
+// 			Message: "error fetching the ad",
+// 			Error:   err.Error(),
+// 			Success: false,
+// 		}
+// 		context.JSON(http.StatusBadRequest, response)
+// 		return
+// 	} else if adExist.AdName == "" {
+// 		response := models.Reply{
+// 			Message: "ad does not exist",
+// 			Success: true,
+// 		}
+// 		context.JSON(http.StatusOK, response)
+// 		return
+// 	} else if !adExist.IsDeleted {
+// 		response := models.Reply{
+// 			Message: "ad is not deleted",
+// 			Success: true,
+// 		}
+// 		context.JSON(http.StatusOK, response)
+// 		return
+// 	} else {
+// 		deletedAd, err := UpdateMainAdutil(query, models.MainAd{
+// 			IsDeleted: false,
+// 		})
+// 		if err != nil {
+// 			response := models.Reply{
+// 				Message: "error deleting the ad",
+// 				Error:   err.Error(),
+// 				Success: false,
+// 			}
+// 			context.JSON(http.StatusBadRequest, response)
+// 			return
+// 		} else {
+// 			response := models.Reply{
+// 				Message: "ad has been deleted succesfully",
+// 				Success: true,
+// 				Data:    deletedAd,
+// 			}
+// 			context.JSON(http.StatusOK, response)
+// 			return
+// 		}
+
+// 	}
+// }
+
+func ActivateMainAd(context *gin.Context) {
+	adid := context.Query("id")
+	query := "ad_id=" + adid
+
+	// check if ad exists and is not deleted or inactive
+	adExist, err := GetSingleMainAdUtil(query)
+	if err != nil {
+		response := models.Reply{
+			Message: "error fetching the ad",
+			Error:   err.Error(),
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
+	} else if adExist.AdName == "" {
+		response := models.Reply{
+			Message: "ad does not exist",
+			Success: true,
+		}
+		context.JSON(http.StatusOK, response)
+		return
+		// else if adExist.IsDeleted {
+		// 	response := models.Reply{
+		// 		Message: "ad is deleted and operation in prohibitted",
+		// 		Success: true,
+		// 	}
+		// 	context.JSON(http.StatusOK, response)
+		// 	return
+		// }
+	} else if adExist.AdActive {
+		response := models.Reply{
+			Message: "ad is active",
+			Success: true,
+		}
+		context.JSON(http.StatusOK, response)
+		return
+	} else {
+		activatedtedAd, err := UpdateMainAdutil(query, models.MainAd{
+			AdActive: true,
+		})
+		if err != nil {
+			response := models.Reply{
+				Message: "error activating the ad",
+				Error:   err.Error(),
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
+		} else {
+			response := models.Reply{
+				Message: "ad has been activated succesfully",
+				Success: true,
+				Data:    activatedtedAd,
+			}
+			context.JSON(http.StatusOK, response)
+			return
+		}
+
+	}
+}
+
+func DeactivateMainAd(context *gin.Context) {
+	adid := context.Query("id")
+	query := "ad_id=" + adid
+
+	// check if ad exists and is not deleted or inactive
+	adExist, err := GetSingleMainAdUtil(query)
+	if err != nil {
+		response := models.Reply{
+			Message: "error fetching the ad",
+			Error:   err.Error(),
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
+	} else if adExist.AdName == "" {
+		response := models.Reply{
+			Message: "ad does not exist",
+			Success: true,
+		}
+		context.JSON(http.StatusOK, response)
+		return
+	} else if !adExist.AdActive {
+		response := models.Reply{
+			Message: "ad is not active",
+			Success: true,
+		}
+		context.JSON(http.StatusOK, response)
+		return
+	} else {
+		deactivatedtedAd, err := DeactivateUtil(query)
+		if err != nil {
+			response := models.Reply{
+				Message: "error deactivating the ad",
+				Error:   err.Error(),
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
+		} else {
+			response := models.Reply{
+				Message: "ad has been deactivated succesfully",
+				Success: true,
+				Data:    deactivatedtedAd,
+			}
+			context.JSON(http.StatusOK, response)
+			return
+		}
+
+	}
 }

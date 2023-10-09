@@ -12,6 +12,9 @@ func Mainadsroutes(router *gin.Engine) {
 		mainadsroutes.GET("/getmainads", GetAllMainAds)
 		mainadsroutes.GET("/getsinglemainad", GetSingleMainAd)
 		mainadsroutes.POST("/update", users.JWTAuthMiddleWare(), UpdateMainAd)
-		mainadsroutes.POST("/delete", users.JWTAuthMiddleWare(), DeleteteMainAd)
+		mainadsroutes.POST("/delete", users.JWTAuthMiddleWare(), DeleteMainAd)
+		// mainadsroutes.POST("/restore", users.JWTAuthMiddleWare(), RestoreMainAd)
+		mainadsroutes.POST("/activate", users.JWTAuthMiddleWare(), ActivateMainAd)
+		mainadsroutes.POST("/deactivate", users.JWTAuthMiddleWare(), DeactivateMainAd)
 	}
 }
