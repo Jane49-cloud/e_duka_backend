@@ -16,7 +16,12 @@ func AddProduct(context *gin.Context) {
 	var productInput AddProductInput
 
 	if err := context.ShouldBindJSON(&productInput); err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+		response := models.Reply{
+			Message: "could not bind data from the user",
+			Error:   err.Error(),
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
