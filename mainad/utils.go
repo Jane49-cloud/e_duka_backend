@@ -65,6 +65,16 @@ func UpdateMainAdutil(query string, update models.MainAd) (models.MainAd, error)
 	}
 	return updatedAd, nil
 }
+func RestoreAdUtil(query string) (models.MainAd, error) {
+	var updatedAd models.MainAd
+
+	result := database.Database.Model(&updatedAd).Where(query).Update("is_deleted", false)
+	log.Printf("Database error: %s", result.Error)
+	if result.RowsAffected == 0 {
+		return models.MainAd{}, errors.New("could not update the main ad")
+	}
+	return updatedAd, nil
+}
 
 func DeactivateUtil(query string) (models.MainAd, error) {
 	var updatedAd models.MainAd
