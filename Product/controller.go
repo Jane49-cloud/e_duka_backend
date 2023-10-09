@@ -1,10 +1,12 @@
 package product
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
 	"eleliafrika.com/backend/category"
+	globalutils "eleliafrika.com/backend/global_utils"
 	"eleliafrika.com/backend/models"
 	subcategory "eleliafrika.com/backend/subcategories"
 	"eleliafrika.com/backend/users"
@@ -321,4 +323,110 @@ func UpdateProduct(context *gin.Context) {
 			}
 		}
 	}
+}
+
+func ActivateProduct(context *gin.Context) {
+	productid := context.Query("id")
+	query := "product_id=" + productid
+
+	// check if product exist
+	productExist, err := FindSingleProduct(query)
+	if err != nil {
+		globalutils.HandleError("error finding product", err, context)
+	} else if productExist.ProductName == "" {
+		globalutils.HandleSuccess("the product does not exist", models.Product{}, context)
+	} else if productExist.IsDeleted {
+		globalutils.HandleSuccess("cannot activate a deleted product!!Please restore product first", productExist, context)
+	} else if productExist.IsActive {
+		globalutils.HandleSuccess("product is already active", productExist, context)
+	} else {
+		success, err := ActivateProductUtil(query)
+		if err != nil {
+			globalutils.HandleError("error activating  product", err, context)
+		} else if !success {
+			globalutils.HandleError("failed in activating product", errors.New("could not activate product!!try again"), context)
+		} else {
+			globalutils.HandleSuccess("succesfully activated the product", productExist, context)
+		}
+	}
+
+}
+
+func DeactivateProduct(context *gin.Context) {
+	productid := context.Query("id")
+	query := "product_id=" + productid
+
+	// check if product exist
+	productExist, err := FindSingleProduct(query)
+	if err != nil {
+		globalutils.HandleError("error finding product", err, context)
+	} else if productExist.ProductName == "" {
+		globalutils.HandleSuccess("the product does not exist", models.Product{}, context)
+	} else if productExist.IsDeleted {
+		globalutils.HandleSuccess("product is deleted!!Please restore product first", productExist, context)
+	} else if !productExist.IsActive {
+		globalutils.HandleSuccess("product is not active active", productExist, context)
+	} else {
+		success, err := DeactivateProductUtil(query)
+		if err != nil {
+			globalutils.HandleError("error deactivating  product", err, context)
+		} else if !success {
+			globalutils.HandleError("failed in deactivating product", errors.New("could not deactivate product!!try again"), context)
+		} else {
+			globalutils.HandleSuccess("succesfully deactivated the product", productExist, context)
+		}
+	}
+
+}
+
+func DeleteProduct(context *gin.Context) {
+	productid := context.Query("id")
+	query := "product_id=" + productid
+
+	// check if product exist
+	productExist, err := FindSingleProduct(query)
+	if err != nil {
+		globalutils.HandleError("error finding product", err, context)
+	} else if productExist.ProductName == "" {
+		globalutils.HandleSuccess("the product does not exist", models.Product{}, context)
+	} else if productExist.IsDeleted {
+		globalutils.HandleSuccess("product already deleted", productExist, context)
+	} else if productExist.IsActive {
+		globalutils.HandleSuccess("you cannot delete an active product!! Please deactivate the product first", productExist, context)
+	} else {
+		success, err := DeleteProductUtil(query)
+		if err != nil {
+			globalutils.HandleError("error deleting  product", err, context)
+		} else if !success {
+			globalutils.HandleError("failed in deleting product", errors.New("could not delete product!!try again"), context)
+		} else {
+			globalutils.HandleSuccess("succesfully deleted the product", productExist, context)
+		}
+	}
+
+}
+
+func RestoreProduct(context *gin.Context) {
+	productid := context.Query("id")
+	query := "product_id=" + productid
+
+	// check if product exist
+	productExist, err := FindSingleProduct(query)
+	if err != nil {
+		globalutils.HandleError("error finding product", err, context)
+	} else if productExist.ProductName == "" {
+		globalutils.HandleSuccess("the product does not exist", models.Product{}, context)
+	} else if !productExist.IsDeleted {
+		globalutils.HandleSuccess("product is not deleted", productExist, context)
+	} else {
+		success, err := RestoreProductUtil(query)
+		if err != nil {
+			globalutils.HandleError("error restoring  product", err, context)
+		} else if !success {
+			globalutils.HandleError("failed in restoring product", errors.New("could not restore product!!try again"), context)
+		} else {
+			globalutils.HandleSuccess("succesfully restoring the product", productExist, context)
+		}
+	}
+
 }

@@ -15,5 +15,9 @@ func PostRoutes(router *gin.Engine) {
 		authRoutes.GET("/getproducts/single/", GetSingleProduct)
 		authRoutes.POST("/updateproduct/", UpdateProduct)
 		authRoutes.GET("/getimages", images.Getimages)
+		authRoutes.POST("/deleteproduct", DeleteProduct)
+		authRoutes.POST("/restore", RestoreProduct)
+		authRoutes.POST("/activate", ActivateProduct)
+		authRoutes.POST("/deactivate", DeactivateProduct)
 	}
 }

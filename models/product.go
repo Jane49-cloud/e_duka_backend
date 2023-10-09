@@ -15,6 +15,9 @@ type Product struct {
 	MainImage          string `gorm:"not null;" json:"mainimage"`
 	ProductStatus      string `gorm:"not null;" json:"productstatus"`
 	Quantity           int    `gorm:"default:0" json:"quantity"`
+	IsActive           bool   `gorm:"column:is_active;default:false" json:"isactive"`
+	IsDeleted          bool   `gorm:"column:is_deleted;default:false" json:"isdeleted"`
+	ActiveUntil        string `gorm:"column:active_until" json:"activeuntil"`
 	ProductType        string `gorm:"column:product_type;" json:"producttype"`
 	TotalLikes         int    `gorm:"default:0" json:"totallikes"`
 	TotalComments      int    `gorm:"default:0" json:"totalcomments"`

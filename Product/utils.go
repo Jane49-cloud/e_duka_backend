@@ -102,3 +102,37 @@ func UpdateProductUtil(query string, update models.Product) (models.Product, err
 	}
 	return updatedProduct, nil
 }
+
+func ActivateProductUtil(query string) (bool, error) {
+	var updatedProduct models.Product
+	result := database.Database.Model(&updatedProduct).Where(query).Update("is_active", true)
+	if result.RowsAffected == 0 {
+		return false, errors.New("could not activate the current product")
+	}
+	return true, nil
+}
+func DeactivateProductUtil(query string) (bool, error) {
+	var updatedProduct models.Product
+	result := database.Database.Model(&updatedProduct).Where(query).Update("is_active", false)
+	if result.RowsAffected == 0 {
+		return false, errors.New("could not deactivate the current product")
+	}
+	return true, nil
+}
+
+func DeleteProductUtil(query string) (bool, error) {
+	var updatedProduct models.Product
+	result := database.Database.Model(&updatedProduct).Where(query).Update("is_deleted", true)
+	if result.RowsAffected == 0 {
+		return false, errors.New("could not delete the current product")
+	}
+	return true, nil
+}
+func RestoreProductUtil(query string) (bool, error) {
+	var updatedProduct models.Product
+	result := database.Database.Model(&updatedProduct).Where(query).Update("is_deleted", false)
+	if result.RowsAffected == 0 {
+		return false, errors.New("could not restore the current product")
+	}
+	return true, nil
+}
