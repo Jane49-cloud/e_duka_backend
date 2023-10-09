@@ -49,7 +49,7 @@ func ValidateProductInput(product *AddProductInput) (bool, error) {
 				}
 			}
 		} else if value == product.ProductDescription {
-
+			charPattern := "[@#$%^&\\=\\[\\]{};:\\\\|<>]"
 			if len(value) < 100 {
 				return false, errors.New("product description should atleast be 100 characters long")
 			} else if regexp.MustCompile(charPattern).MatchString(product.ProductDescription) {
