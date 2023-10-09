@@ -9,7 +9,7 @@ func Mainadsroutes(router *gin.Engine) {
 	mainadsroutes := router.Group("/mainads")
 	{
 		mainadsroutes.POST("/create", users.JWTAuthMiddleWare(), CreateMainAd)
-		mainadsroutes.GET("/getmainads", users.JWTAuthMiddleWare(), GetAllMainAds)
+		mainadsroutes.GET("/getmainads", GetAllMainAds)
 		mainadsroutes.GET("/getsinglemainad", GetSingleMainAd)
 		mainadsroutes.POST("/update", users.JWTAuthMiddleWare(), UpdateMainAd)
 	}

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"regexp"
 
+	"eleliafrika.com/backend/database"
 	"eleliafrika.com/backend/models"
 )
 
@@ -33,4 +34,14 @@ func ValidateMainAdInput(mainad *models.MainAd) (bool, error) {
 
 	}
 	return true, nil
+}
+
+func GetAllMainAdsUtil() ([]models.MainAd, error) {
+	var allmainads []models.MainAd
+	err := database.Database.Find(&allmainads).Error
+	if err != nil {
+		return []models.MainAd{}, err
+	}
+
+	return allmainads, nil
 }

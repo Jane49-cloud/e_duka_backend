@@ -117,7 +117,32 @@ func CreateMainAd(context *gin.Context) {
 
 }
 func GetAllMainAds(context *gin.Context) {
-
+	adlist, err := GetAllMainAdsUtil()
+	if err != nil {
+		response := models.Reply{
+			Message: "error fetching the ads",
+			Error:   err.Error(),
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
+	} else if len(adlist) == 0 {
+		response := models.Reply{
+			Message: "there are no ads",
+			Success: true,
+			Data:    adlist,
+		}
+		context.JSON(http.StatusOK, response)
+		return
+	} else {
+		response := models.Reply{
+			Message: "ads fetched",
+			Success: true,
+			Data:    adlist,
+		}
+		context.JSON(http.StatusOK, response)
+		return
+	}
 }
 func UpdateMainAd(context *gin.Context) {
 

@@ -11,7 +11,6 @@ import (
 	"eleliafrika.com/backend/database"
 	"eleliafrika.com/backend/images"
 	"eleliafrika.com/backend/mainad"
-	"eleliafrika.com/backend/models"
 	subcategory "eleliafrika.com/backend/subcategories"
 	"eleliafrika.com/backend/users"
 	"github.com/gin-contrib/cors"
@@ -22,7 +21,7 @@ import (
 func LoadDatabase() {
 	database.Connect()
 	// database.Database.AutoMigrate(&models.User{}, &models.Brand{}, &models.Category{}, &models.SubCategory{}, &models.Comment{}, &models.Product{})
-	database.Database.AutoMigrate(&models.MainAd{})
+	// database.Database.AutoMigrate(&models.MainAd{})
 }
 
 func LoadEnv() {
