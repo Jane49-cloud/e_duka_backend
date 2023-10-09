@@ -148,5 +148,43 @@ func UpdateMainAd(context *gin.Context) {
 
 }
 func GetSingleMainAd(context *gin.Context) {
+	adid := context.Query("id")
+	query := "ad_id=" + adid
+
+	singlead, err := GetSingleMainAdUtil(query)
+	if err != nil {
+		response := models.Reply{
+			Message: "error fetching single ad",
+			Success: false,
+			Error:   err.Error(),
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
+	} else if singlead.IsDeleted {
+		response := models.Reply{
+			Message: "the ad you are fetchin has been deleted",
+			Success: true,
+		}
+		context.JSON(http.StatusOK, response)
+		return
+	} else if !singlead.IsActive {
+		response := models.Reply{
+			Message: "the ad you are fetchin has been deactivated",
+			Success: true,
+		}
+		context.JSON(http.StatusOK, response)
+		return
+	} else {
+		response := models.Reply{
+			Message: "succesffully fetched the ad",
+			Success: true,
+			Data:    singlead,
+		}
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+}
+func DeleteteMainAd(context *gin.Context) {
 
 }

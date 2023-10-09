@@ -45,3 +45,11 @@ func GetAllMainAdsUtil() ([]models.MainAd, error) {
 
 	return allmainads, nil
 }
+func GetSingleMainAdUtil(query string) (models.MainAd, error) {
+	var singlemainad models.MainAd
+	err := database.Database.Where(query).Find(&singlemainad).Error
+	if err != nil {
+		return models.MainAd{}, err
+	}
+	return singlemainad, nil
+}
