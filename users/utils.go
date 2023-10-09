@@ -11,6 +11,7 @@ import (
 	"time"
 	"unicode"
 
+	"eleliafrika.com/backend/database"
 	"eleliafrika.com/backend/models"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
@@ -167,4 +168,15 @@ func ValidateLoginInput(user *LoginInput) (bool, error) {
 		}
 	}
 	return true, nil
+}
+
+func UpdateUserUtil(query string, update models.User) (models.User, error) {
+	var updatedUser models.User
+
+	result := database.Database.Model(&updatedUser).Where(query).Updates(update)
+	fmt.Printf("result\n%v\n", result)
+	if result.RowsAffected == 0 {
+		return models.User{}, errors.New("could not update the user")
+	}
+	return updatedUser, nil
 }

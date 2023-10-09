@@ -2,7 +2,6 @@ package product
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 	"unicode"
 
@@ -97,7 +96,7 @@ func UpdateProductUtil(query string, update models.Product) (models.Product, err
 	var updatedProduct models.Product
 
 	result := database.Database.Model(&updatedProduct).Where(query).Updates(update)
-	fmt.Printf("id\n%v\n", result)
+
 	if result.RowsAffected == 0 {
 		return models.Product{}, errors.New("could not update the product right now")
 	}

@@ -1,7 +1,6 @@
 package comments
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -105,7 +104,6 @@ func DeleteComment(context *gin.Context) {
 
 	// check if the comment exist before deleting comment
 	commentExists, err := FetchComment(query)
-	fmt.Printf("this is comment\n%v\n", commentExists)
 	if err != nil {
 		response := models.Reply{
 			Message: "an error occured during fetching comment",
@@ -129,7 +127,6 @@ func DeleteComment(context *gin.Context) {
 			}
 			context.JSON(http.StatusOK, response)
 		} else {
-			fmt.Printf("id\n%s\n", commentId)
 			commentDeleted, err := DeleteCommentUtil(query, models.Comment{
 				Isdeleted: true,
 			})

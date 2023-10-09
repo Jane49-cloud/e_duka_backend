@@ -224,3 +224,67 @@ func GetSingleUser(context *gin.Context) {
 		}
 	}
 }
+
+func UpdateUser(context *gin.Context) {
+
+	var userUpdateData models.User
+	if err := context.ShouldBindJSON(&userUpdateData); err != nil {
+		response := models.Reply{
+			Message: "could not bind the user data to the request needs",
+			Error:   err.Error(),
+			Success: false,
+			Data:    userUpdateData,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
+	}
+	thisUser, err := CurrentUser(context)
+	if err != nil {
+		response := models.Reply{
+			Message: "could not fetch current user",
+			Error:   err.Error(),
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
+	} else if thisUser.Firstname == "" {
+		response := models.Reply{
+			Message: "user not found",
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
+	} else {
+		userid := context.Query("userid")
+		query := "user_id=" + userid
+		newUser := models.User{
+			Firstname:    userUpdateData.Firstname,
+			Middlename:   userUpdateData.Middlename,
+			Lastname:     userUpdateData.Lastname,
+			UserImage:    userUpdateData.UserImage,
+			UserLocation: userUpdateData.UserLocation,
+			Email:        userUpdateData.Email,
+			Phone:        userUpdateData.Phone,
+		}
+		updateUser, err := UpdateUserUtil(query, newUser)
+		if err != nil {
+			response := models.Reply{
+				Message: "could not update user",
+				Success: false,
+				Error:   err.Error(),
+				Data:    newUser,
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
+		} else {
+			response := models.Reply{
+				Message: "user updated user",
+				Success: true,
+				Data:    updateUser,
+			}
+			context.JSON(http.StatusOK, response)
+			return
+		}
+	}
+
+}
