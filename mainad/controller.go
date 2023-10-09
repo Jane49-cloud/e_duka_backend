@@ -213,6 +213,13 @@ func DeleteMainAd(context *gin.Context) {
 		}
 		context.JSON(http.StatusOK, response)
 		return
+	} else if adExist.AdActive {
+		response := models.Reply{
+			Message: "cannot delete an active ad!!First deactivate the ad to continue",
+			Success: true,
+		}
+		context.JSON(http.StatusOK, response)
+		return
 	} else {
 		deletedAd, err := UpdateMainAdutil(query, models.MainAd{
 			IsDeleted: true,
