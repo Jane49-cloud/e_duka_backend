@@ -113,7 +113,7 @@ func AddProduct(context *gin.Context) {
 					ProductPrice:       productInput.ProductPrice,
 					ProductDescription: productInput.ProductDescription,
 					UserID:             user.UserID,
-					MainImage:          mainImagePath,
+					MainImage:          "http://13.245.255.54:8000/e_duka_backend/" + mainImagePath,
 					ProductStatus:      "Active",
 					Quantity:           productInput.Quantity,
 					ProductType:        productInput.ProductType,
@@ -139,7 +139,7 @@ func AddProduct(context *gin.Context) {
 						image := models.ProductImage{
 							ImageID:   imageuuid.String(),
 							ProductID: productuuid.String(),
-							ImageUrl:  i,
+							ImageUrl:  "http://13.245.255.54:8000/e_duka_backend/" + i,
 						}
 						savedImage, err := image.Save()
 						if err != nil {
