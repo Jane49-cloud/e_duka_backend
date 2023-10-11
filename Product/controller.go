@@ -101,7 +101,7 @@ func AddProduct(context *gin.Context) {
 			} else {
 
 				// handle image input
-				mainImagePath, err := images.UploadMainimage(context, productInput.MainImage, productInput.ProductName)
+				mainImagePath, err := images.UploadMainimage(productInput.MainImage, productInput.ProductName)
 
 				if err != nil {
 					globalutils.HandleError("error uploading main image", err, context)
@@ -128,24 +128,31 @@ func AddProduct(context *gin.Context) {
 					Category:           productInput.Category,
 					SubCategory:        productInput.SubCategory,
 				}
-				for _, i := range productInput.ProductImages {
+				imagesPath, err := images.UploadOtherImages(productInput.ProductImages, product.ProductName)
+				if err != nil {
+					globalutils.HandleError("error uploading product images", err, context)
+					return
+				} else {
+					for _, i := range imagesPath {
 
-					imageuuid := uuid.New()
-					image := models.ProductImage{
-						ImageID:   imageuuid.String(),
-						ProductID: productuuid.String(),
-						ImageUrl:  i,
-					}
-					savedImage, err := image.Save()
-					if err != nil {
-						context.JSON(http.StatusBadRequest, gin.H{
-							"error with saving image": err.Error(),
-							"success":                 false,
-							"image":                   savedImage,
-						})
-						return
+						imageuuid := uuid.New()
+						image := models.ProductImage{
+							ImageID:   imageuuid.String(),
+							ProductID: productuuid.String(),
+							ImageUrl:  i,
+						}
+						savedImage, err := image.Save()
+						if err != nil {
+							context.JSON(http.StatusBadRequest, gin.H{
+								"error with saving image": err.Error(),
+								"success":                 false,
+								"image":                   savedImage,
+							})
+							return
+						}
 					}
 				}
+
 				savedProduct, err := product.Save()
 
 				if err != nil {

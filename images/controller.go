@@ -28,7 +28,7 @@ func Getimages(context *gin.Context) {
 		"images":  images,
 	})
 }
-func UploadMainimage(context *gin.Context, mainImageString string, productName string) (mainimagepath string, err error) {
+func UploadMainimage(mainImageString string, productName string) (mainimagepath string, err error) {
 
 	imageuuid := uuid.New()
 
@@ -73,4 +73,53 @@ func UploadMainimage(context *gin.Context, mainImageString string, productName s
 	mainimagepath = imagePath
 
 	return mainimagepath, nil
+}
+
+func UploadOtherImages(imagesString []string, productName string) ([]string, error) {
+	var imagespath []string
+
+	for _, image := range imagesString {
+		imageuuid := uuid.New()
+
+		imagename := strings.ReplaceAll(productName, " ", "") + imageuuid.String()
+
+		imageBytes, err := base64.StdEncoding.DecodeString(image)
+
+		if err != nil {
+			return imagespath, err
+		}
+
+		mainImagesFolder := "assets/products/"
+
+		if _, err = os.Stat(mainImagesFolder); os.IsNotExist(err) {
+			if err = os.Mkdir(mainImagesFolder, 0755); err != nil {
+				return imagespath, err
+			}
+		}
+		productFolder := mainImagesFolder + strings.ReplaceAll(productName, " ", "")
+
+		if _, err = os.Stat(productFolder); os.IsNotExist(err) {
+			if err = os.Mkdir(productFolder, 0755); err != nil {
+				return imagespath, err
+			}
+		}
+
+		otherImageFolder := productFolder + "/otherimages"
+
+		if _, err = os.Stat(otherImageFolder); os.IsNotExist(err) {
+			if err = os.Mkdir(otherImageFolder, 0755); err != nil {
+				return imagespath, err
+			}
+		}
+
+		imagePath := filepath.Join(otherImageFolder, imagename)
+
+		err = os.WriteFile(imagePath, imageBytes, 0644)
+		if err != nil {
+			return imagespath, err
+		}
+		imagespath = append(imagespath, imagePath)
+	}
+
+	return imagespath, nil
 }
