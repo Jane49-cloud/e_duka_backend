@@ -7,6 +7,7 @@ import (
 
 	"eleliafrika.com/backend/category"
 	globalutils "eleliafrika.com/backend/global_utils"
+	"eleliafrika.com/backend/images"
 	"eleliafrika.com/backend/models"
 	subcategory "eleliafrika.com/backend/subcategories"
 	"eleliafrika.com/backend/users"
@@ -95,13 +96,20 @@ func AddProduct(context *gin.Context) {
 			return
 		} else {
 
+			// handle image input
+			mainImagePath, err := images.UploadMainimage(context, productInput.ProductName)
+
+			if err != nil {
+				globalutils.HandleError("error uploading main image", err, context)
+				return
+			}
 			product := models.Product{
 				ProductID:          productuuid.String(),
 				ProductName:        productInput.ProductName,
 				ProductPrice:       productInput.ProductPrice,
 				ProductDescription: productInput.ProductDescription,
 				UserID:             user.UserID,
-				MainImage:          productInput.MainImage,
+				MainImage:          mainImagePath,
 				ProductStatus:      "Active",
 				Quantity:           productInput.Quantity,
 				ProductType:        productInput.ProductType,
