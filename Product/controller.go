@@ -57,107 +57,111 @@ func AddProduct(context *gin.Context) {
 				"success": false,
 				"message": "could not find user",
 			})
-		}
-
-		// check if category exists
-		categoryExists, err := category.FetchSingleCategory(productInput.Category)
-		if err != nil {
-			response := models.Reply{
-				Message: "error validating the category",
-				Error:   err.Error(),
-				Success: false,
-			}
-			context.JSON(http.StatusBadRequest, response)
 			return
-		}
-		subCategoryExists, err := subcategory.FetchSingleSubCategory(productInput.SubCategory)
-		if err != nil {
-			response := models.Reply{
-				Message: "error validating the sub category",
-				Error:   err.Error(),
-				Success: false,
-			}
-			context.JSON(http.StatusBadRequest, response)
-			return
-		}
-
-		if categoryExists.CategoryName == "" {
-			response := models.Reply{
-				Message: "category not found",
-				Success: false,
-			}
-			context.JSON(http.StatusBadRequest, response)
-			return
-		} else if subCategoryExists.SubCategoryName == "" {
-			response := models.Reply{
-				Message: "sub category not found",
-				Success: false,
-			}
-			context.JSON(http.StatusBadRequest, response)
-			return
+		} else if user.Firstname == "" {
+			globalutils.HandleSuccess("user not found", user, context)
 		} else {
 
-			// handle image input
-			mainImagePath, err := images.UploadMainimage(context, productInput.MainImage, productInput.ProductName)
-
+			// check if category exists
+			categoryExists, err := category.FetchSingleCategory(productInput.Category)
 			if err != nil {
-				globalutils.HandleError("error uploading main image", err, context)
+				response := models.Reply{
+					Message: "error validating the category",
+					Error:   err.Error(),
+					Success: false,
+				}
+				context.JSON(http.StatusBadRequest, response)
 				return
 			}
-			product := models.Product{
-				ProductID:          productuuid.String(),
-				ProductName:        productInput.ProductName,
-				ProductPrice:       productInput.ProductPrice,
-				ProductDescription: productInput.ProductDescription,
-				UserID:             user.UserID,
-				MainImage:          mainImagePath,
-				ProductStatus:      "Active",
-				Quantity:           productInput.Quantity,
-				ProductType:        productInput.ProductType,
-				TotalLikes:         0,
-				TotalComments:      0,
-				DateAdded:          formattedTime,
-				LastUpdated:        formattedTime,
-				LatestInteractions: formattedTime,
-				TotalInteractions:  0,
-				TotalBookmarks:     0,
-				Brand:              productInput.Brand,
-				Category:           productInput.Category,
-				SubCategory:        productInput.SubCategory,
-			}
-			for _, i := range productInput.ProductImages {
-
-				imageuuid := uuid.New()
-				image := models.ProductImage{
-					ImageID:   imageuuid.String(),
-					ProductID: productuuid.String(),
-					ImageUrl:  i,
+			subCategoryExists, err := subcategory.FetchSingleSubCategory(productInput.SubCategory)
+			if err != nil {
+				response := models.Reply{
+					Message: "error validating the sub category",
+					Error:   err.Error(),
+					Success: false,
 				}
-				savedImage, err := image.Save()
+				context.JSON(http.StatusBadRequest, response)
+				return
+			}
+
+			if categoryExists.CategoryName == "" {
+				response := models.Reply{
+					Message: "category not found",
+					Success: false,
+				}
+				context.JSON(http.StatusBadRequest, response)
+				return
+			} else if subCategoryExists.SubCategoryName == "" {
+				response := models.Reply{
+					Message: "sub category not found",
+					Success: false,
+				}
+				context.JSON(http.StatusBadRequest, response)
+				return
+			} else {
+
+				// handle image input
+				mainImagePath, err := images.UploadMainimage(context, productInput.MainImage, productInput.ProductName)
+
+				if err != nil {
+					globalutils.HandleError("error uploading main image", err, context)
+					return
+				}
+				product := models.Product{
+					ProductID:          productuuid.String(),
+					ProductName:        productInput.ProductName,
+					ProductPrice:       productInput.ProductPrice,
+					ProductDescription: productInput.ProductDescription,
+					UserID:             user.UserID,
+					MainImage:          mainImagePath,
+					ProductStatus:      "Active",
+					Quantity:           productInput.Quantity,
+					ProductType:        productInput.ProductType,
+					TotalLikes:         0,
+					TotalComments:      0,
+					DateAdded:          formattedTime,
+					LastUpdated:        formattedTime,
+					LatestInteractions: formattedTime,
+					TotalInteractions:  0,
+					TotalBookmarks:     0,
+					Brand:              productInput.Brand,
+					Category:           productInput.Category,
+					SubCategory:        productInput.SubCategory,
+				}
+				for _, i := range productInput.ProductImages {
+
+					imageuuid := uuid.New()
+					image := models.ProductImage{
+						ImageID:   imageuuid.String(),
+						ProductID: productuuid.String(),
+						ImageUrl:  i,
+					}
+					savedImage, err := image.Save()
+					if err != nil {
+						context.JSON(http.StatusBadRequest, gin.H{
+							"error with saving image": err.Error(),
+							"success":                 false,
+							"image":                   savedImage,
+						})
+						return
+					}
+				}
+				savedProduct, err := product.Save()
+
 				if err != nil {
 					context.JSON(http.StatusBadRequest, gin.H{
-						"error with saving image": err.Error(),
-						"success":                 false,
-						"image":                   savedImage,
+						"error with save": err.Error(),
+						"success":         false,
 					})
 					return
 				}
-			}
-			savedProduct, err := product.Save()
 
-			if err != nil {
-				context.JSON(http.StatusBadRequest, gin.H{
-					"error with save": err.Error(),
-					"success":         false,
+				context.JSON(http.StatusCreated, gin.H{
+					"data":    savedProduct,
+					"success": true,
+					"message": "product has been added succesfully",
 				})
-				return
 			}
-
-			context.JSON(http.StatusCreated, gin.H{
-				"data":    savedProduct,
-				"success": true,
-				"message": "product has been added succesfully",
-			})
 		}
 	}
 }

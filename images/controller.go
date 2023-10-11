@@ -32,7 +32,7 @@ func UploadMainimage(context *gin.Context, mainImageString string, productName s
 
 	imageuuid := uuid.New()
 
-	mainImageFilename := imageuuid.String() + productName
+	mainImageFilename := strings.ReplaceAll(productName, " ", "") + imageuuid.String()
 
 	imageBytes, err := base64.StdEncoding.DecodeString(mainImageString)
 

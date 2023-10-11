@@ -11,7 +11,7 @@ type Product struct {
 	ProductName        string `gorm:"column:product_name;unique;not null" json:"productname"`
 	ProductPrice       string `gorm:"column:product_price;not null" json:"productprice"`
 	ProductDescription string `gorm:"column:product_description;" json:"productdescription"`
-	UserID             string `gorm:"size:255;not null" json:"userid"`
+	UserID             string `gorm:"size:255;not null;" json:"userid"`
 	MainImage          string `gorm:"not null;" json:"mainimage"`
 	ProductStatus      string `gorm:"not null;" json:"productstatus"`
 	Quantity           int    `gorm:"default:0" json:"quantity"`
