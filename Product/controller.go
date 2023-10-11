@@ -18,7 +18,7 @@ import (
 func AddProduct(context *gin.Context) {
 	var productInput AddProductInput
 
-	if err := context.ShouldBindJSON(&productInput); err != nil {
+	if err := context.ShouldBind(&productInput); err != nil {
 		response := models.Reply{
 			Message: "could not bind data from the user",
 			Error:   err.Error(),
@@ -37,6 +37,7 @@ func AddProduct(context *gin.Context) {
 			Message: "error validating user input",
 			Error:   err.Error(),
 			Success: false,
+			Data:    productInput,
 		}
 		context.JSON(http.StatusBadRequest, response)
 		return
@@ -97,7 +98,7 @@ func AddProduct(context *gin.Context) {
 		} else {
 
 			// handle image input
-			mainImagePath, err := images.UploadMainimage(context, productInput.ProductName)
+			mainImagePath, err := images.UploadMainimage(context, productInput.MainImage, productInput.ProductName)
 
 			if err != nil {
 				globalutils.HandleError("error uploading main image", err, context)
