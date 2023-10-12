@@ -2,7 +2,9 @@ package images
 
 import (
 	"bytes"
+	"encoding/base64"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 
@@ -24,14 +26,23 @@ func GetProductImages() ([]models.ProductImage, error) {
 	return productsImages, nil
 }
 
-func GetSpecificProductImage(productid string) ([]models.ProductImage, error) {
+func GetSpecificProductImage(productid string) ([]string, error) {
 	var productsImages []models.ProductImage
+	var images []string
 	err := database.Database.Where("product_id=?", productid).Find(&productsImages).Error
 	if err != nil {
-		return []models.ProductImage{}, err
-
+		return []string{}, err
 	}
-	return productsImages, nil
+
+	for _, i := range productsImages {
+		img, err := DownloadImageFromBucket(i.ImageUrl)
+		if err != nil {
+			return []string{}, err
+		}
+		images = append(images, img)
+	}
+
+	return images, nil
 }
 
 func UploadImageToBucket(productName string, imagefolder string, imageBytes []byte, imagename string) (string, error) {
@@ -72,4 +83,41 @@ func UploadImageToBucket(productName string, imagefolder string, imageBytes []by
 	fmt.Printf("main image string \n%s\n", objectKey)
 	return objectKey, nil
 
+}
+func DownloadImageFromBucket(objectKey string) (string, error) {
+	awsSecret := os.Getenv("SECRET_KEY")
+	awsAccessKey := os.Getenv("ACCESS_KEY")
+	token := os.Getenv("TOKEN")
+
+	creds := credentials.NewStaticCredentials(awsAccessKey, awsSecret, token)
+	cfg := aws.NewConfig().WithRegion("af-south-1").WithCredentials(creds)
+
+	sess, err := session.NewSession(cfg)
+	if err != nil {
+		return "", err
+	}
+
+	svc := s3.New(sess)
+	storageLocation := "e-duka-images"
+	input := &s3.GetObjectInput{
+		Bucket: aws.String(storageLocation),
+		Key:    aws.String(objectKey),
+	}
+
+	result, err := svc.GetObject(input)
+	if err != nil {
+		return "", err
+	}
+	defer result.Body.Close()
+
+	var imageBuffer bytes.Buffer
+
+	_, err = io.Copy(&imageBuffer, result.Body)
+
+	if err != nil {
+		return "", err
+	}
+	imageString := base64.StdEncoding.EncodeToString(imageBuffer.Bytes())
+
+	return imageString, nil
 }

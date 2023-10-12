@@ -1,17 +1,10 @@
 package images
 
 import (
-	"bytes"
 	"encoding/base64"
-	"io"
-	"net/http"
-	"os"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
+	globalutils "eleliafrika.com/backend/global_utils"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -20,18 +13,12 @@ func Getimages(context *gin.Context) {
 	productId := context.Param("id")
 	images, err := GetSpecificProductImage(productId)
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{
-			"error":   err.Error(),
-			"success": false,
-			"message": "Could not fetch products",
-		})
+		globalutils.HandleError("could not the images", err, context)
+		return
 	}
-	context.JSON(http.StatusOK, gin.H{
 
-		"success": true,
-		"message": "Could not fetch products",
-		"images":  images,
-	})
+	globalutils.HandleSuccess("image fetched sucessfully", images, context)
+
 }
 
 func UploadMainimage(mainImageString string, productName string) (mainimagepath string, err error) {
@@ -76,41 +63,4 @@ func UploadOtherImages(imagesString []string, productName string) ([]string, err
 	}
 
 	return imagespath, nil
-}
-func DownloadImageFromBucket(objectKey string) (string, error) {
-	awsSecret := os.Getenv("SECRET_KEY")
-	awsAccessKey := os.Getenv("ACCESS_KEY")
-	token := os.Getenv("TOKEN")
-
-	creds := credentials.NewStaticCredentials(awsAccessKey, awsSecret, token)
-	cfg := aws.NewConfig().WithRegion("af-south-1").WithCredentials(creds)
-
-	sess, err := session.NewSession(cfg)
-	if err != nil {
-		return "", err
-	}
-
-	svc := s3.New(sess)
-	storageLocation := "e-duka-images"
-	input := &s3.GetObjectInput{
-		Bucket: aws.String(storageLocation),
-		Key:    aws.String(objectKey),
-	}
-
-	result, err := svc.GetObject(input)
-	if err != nil {
-		return "", err
-	}
-	defer result.Body.Close()
-
-	var imageBuffer bytes.Buffer
-
-	_, err = io.Copy(&imageBuffer, result.Body)
-
-	if err != nil {
-		return "", err
-	}
-	imageString := base64.StdEncoding.EncodeToString(imageBuffer.Bytes())
-
-	return imageString, nil
 }

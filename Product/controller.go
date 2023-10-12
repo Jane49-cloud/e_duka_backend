@@ -3,6 +3,7 @@ package product
 import (
 	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	"eleliafrika.com/backend/category"
@@ -206,32 +207,29 @@ func GetAllProducts(context *gin.Context) {
 func GetSingleProduct(context *gin.Context) {
 
 	productid := context.Query("id")
+
 	query := "product_id=" + productid
 
 	productExist, err := FindSingleProduct(query)
 	if err != nil {
-		response := models.Reply{
-			Message: "could not fetch single product",
-			Error:   err.Error(),
-			Success: false,
-			Data:    productid,
-		}
-		context.JSON(http.StatusBadRequest, response)
+		globalutils.HandleError("could not fetch single product", err, context)
 		return
 	} else if productExist.ProductName != "" {
-		response := models.Reply{
-			Message: "fetched product succesfully",
-			Success: true,
-			Data:    productExist,
+		newId := strings.ReplaceAll(productid, "'", "")
+		productImages, err := images.GetSpecificProductImage(newId)
+		if err != nil {
+			globalutils.HandleError("could not fetch product images", err, context)
 		}
-		context.JSON(http.StatusOK, response)
+
+		productData := gin.H{
+			"productdata": productExist,
+			"images":      productImages,
+		}
+		globalutils.HandleSuccess("fetched product succesful", productData, context)
 		return
 	} else {
-		response := models.Reply{
-			Message: "product does not exist",
-			Success: true,
-		}
-		context.JSON(http.StatusOK, response)
+		globalutils.HandleSuccess("fetch product does not exist", productExist, context)
+		return
 	}
 }
 func UpdateProduct(context *gin.Context) {
