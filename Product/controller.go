@@ -218,9 +218,13 @@ func GetSingleProduct(context *gin.Context) {
 		newId := strings.ReplaceAll(productid, "'", "")
 		productImages, err := images.GetSpecificProductImage(newId)
 		if err != nil {
-			globalutils.HandleError("could not fetch product images", err, context)
+			globalutils.HandleError("could not download product images", err, context)
 		}
-
+		mainImage, err := images.DownloadImageFromBucket(productExist.MainImage)
+		if err != nil {
+			globalutils.HandleError("could not download product main image", err, context)
+		}
+		productExist.MainImage = mainImage
 		productData := gin.H{
 			"productdata": productExist,
 			"images":      productImages,
