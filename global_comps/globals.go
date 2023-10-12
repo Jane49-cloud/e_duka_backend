@@ -34,6 +34,10 @@ func LoadEnv() {
 
 func ServeApplication() {
 	router := gin.Default()
+	router.Use(func(c *gin.Context) {
+		c.Header("Referrer-Policy", "no-referrer")
+		c.Next()
+	})
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
 	config.AllowHeaders = []string{"Content-Type", "x-access-token"}
