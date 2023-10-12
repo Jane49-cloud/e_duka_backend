@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func PostRoutes(router *gin.Engine) {
+func ProductRoutes(router *gin.Engine) {
 	authRoutes := router.Group("/products")
 
 	{
