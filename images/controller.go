@@ -1,12 +1,17 @@
 package images
 
 import (
+	"bytes"
 	"encoding/base64"
+	"io"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -28,6 +33,7 @@ func Getimages(context *gin.Context) {
 		"images":  images,
 	})
 }
+
 func UploadMainimage(mainImageString string, productName string) (mainimagepath string, err error) {
 
 	imageuuid := uuid.New()
@@ -40,38 +46,10 @@ func UploadMainimage(mainImageString string, productName string) (mainimagepath 
 		return "", err
 	}
 
-	mainImagesFolder := "assets/products/"
-
-	if _, err = os.Stat(mainImagesFolder); os.IsNotExist(err) {
-		if err = os.Mkdir(mainImagesFolder, 0755); err != nil {
-			return "", err
-		}
-	}
-	productFolder := mainImagesFolder + strings.ReplaceAll(productName, " ", "")
-
-	if _, err = os.Stat(productFolder); os.IsNotExist(err) {
-		if err = os.Mkdir(productFolder, 0755); err != nil {
-			return "", err
-		}
-	}
-
-	mainImageFolder := productFolder + "/mainimage"
-
-	if _, err = os.Stat(mainImageFolder); os.IsNotExist(err) {
-		if err = os.Mkdir(mainImageFolder, 0755); err != nil {
-			return "", err
-		}
-	}
-
-	imagePath := filepath.Join(mainImageFolder, mainImageFilename)
-
-	err = os.WriteFile(imagePath, imageBytes, 0644)
+	mainimagepath, err = UploadImageToBucket(productName, "mainimage", imageBytes, mainImageFilename)
 	if err != nil {
 		return "", err
 	}
-
-	mainimagepath = imagePath
-
 	return mainimagepath, nil
 }
 
@@ -89,37 +67,50 @@ func UploadOtherImages(imagesString []string, productName string) ([]string, err
 			return imagespath, err
 		}
 
-		mainImagesFolder := "assets/products/"
-
-		if _, err = os.Stat(mainImagesFolder); os.IsNotExist(err) {
-			if err = os.Mkdir(mainImagesFolder, 0755); err != nil {
-				return imagespath, err
-			}
-		}
-		productFolder := mainImagesFolder + strings.ReplaceAll(productName, " ", "")
-
-		if _, err = os.Stat(productFolder); os.IsNotExist(err) {
-			if err = os.Mkdir(productFolder, 0755); err != nil {
-				return imagespath, err
-			}
-		}
-
-		otherImageFolder := productFolder + "/otherimages"
-
-		if _, err = os.Stat(otherImageFolder); os.IsNotExist(err) {
-			if err = os.Mkdir(otherImageFolder, 0755); err != nil {
-				return imagespath, err
-			}
-		}
-
-		imagePath := filepath.Join(otherImageFolder, imagename)
-
-		err = os.WriteFile(imagePath, imageBytes, 0644)
+		imagepath, err := UploadImageToBucket(productName, "other-images", imageBytes, imagename)
 		if err != nil {
 			return imagespath, err
 		}
-		imagespath = append(imagespath, imagePath)
+
+		imagespath = append(imagespath, imagepath)
 	}
 
 	return imagespath, nil
+}
+func DownloadImageFromBucket(objectKey string) (string, error) {
+	awsSecret := os.Getenv("SECRET_KEY")
+	awsAccessKey := os.Getenv("ACCESS_KEY")
+	token := os.Getenv("TOKEN")
+
+	creds := credentials.NewStaticCredentials(awsAccessKey, awsSecret, token)
+	cfg := aws.NewConfig().WithRegion("af-south-1").WithCredentials(creds)
+
+	sess, err := session.NewSession(cfg)
+	if err != nil {
+		return "", err
+	}
+
+	svc := s3.New(sess)
+	storageLocation := "e-duka-images"
+	input := &s3.GetObjectInput{
+		Bucket: aws.String(storageLocation),
+		Key:    aws.String(objectKey),
+	}
+
+	result, err := svc.GetObject(input)
+	if err != nil {
+		return "", err
+	}
+	defer result.Body.Close()
+
+	var imageBuffer bytes.Buffer
+
+	_, err = io.Copy(&imageBuffer, result.Body)
+
+	if err != nil {
+		return "", err
+	}
+	imageString := base64.StdEncoding.EncodeToString(imageBuffer.Bytes())
+
+	return imageString, nil
 }

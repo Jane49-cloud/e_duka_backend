@@ -113,7 +113,7 @@ func AddProduct(context *gin.Context) {
 					ProductPrice:       productInput.ProductPrice,
 					ProductDescription: productInput.ProductDescription,
 					UserID:             user.UserID,
-					MainImage:          "http://13.245.255.54:8000/e_duka_backend/" + mainImagePath,
+					MainImage:          mainImagePath,
 					ProductStatus:      "Active",
 					Quantity:           productInput.Quantity,
 					ProductType:        productInput.ProductType,
@@ -139,7 +139,7 @@ func AddProduct(context *gin.Context) {
 						image := models.ProductImage{
 							ImageID:   imageuuid.String(),
 							ProductID: productuuid.String(),
-							ImageUrl:  "http://13.245.255.54:8000/e_duka_backend/" + i,
+							ImageUrl:  i,
 						}
 						savedImage, err := image.Save()
 						if err != nil {
@@ -162,7 +162,16 @@ func AddProduct(context *gin.Context) {
 					})
 					return
 				}
+				imageString, err := images.DownloadImageFromBucket(mainImagePath)
 
+				if err != nil {
+					context.JSON(http.StatusBadRequest, gin.H{
+						"error with downloading image": err.Error(),
+						"success":                      false,
+					})
+					return
+				}
+				savedProduct.MainImage = imageString
 				context.JSON(http.StatusCreated, gin.H{
 					"data":    savedProduct,
 					"success": true,
