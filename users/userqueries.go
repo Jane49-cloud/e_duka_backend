@@ -21,12 +21,9 @@ func FindUserByEmail(email string) (models.User, error) {
 }
 
 // function to query user with id
-func FindSellerById(id int) (models.User, error) {
-	if id <= 0 {
-		return models.User{}, errors.New("invalid Id number")
-	}
+func FindSellerById(id string) (models.User, error) {
 	var user models.User
-	err := database.Database.Where("id=?", id).Find(&user).Error
+	err := database.Database.Where("user_id=?", id).Find(&user).Error
 	if err != nil {
 		return models.User{}, err
 	}

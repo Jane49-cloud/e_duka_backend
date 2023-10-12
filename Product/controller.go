@@ -2,6 +2,7 @@ package product
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -225,9 +226,26 @@ func GetSingleProduct(context *gin.Context) {
 			globalutils.HandleError("could not download product main image", err, context)
 		}
 		productExist.MainImage = mainImage
+
+		// fetch user details of the product owner
+		fmt.Printf("user id\n%s", productExist.UserID)
+		currentuser, err := users.FindSellerById(string(productExist.UserID))
+		if err != nil {
+			globalutils.HandleError("error finding the seller", err, context)
+			return
+		}
+		sellerDetails := gin.H{
+			"seller_name":        currentuser.Firstname + " " + currentuser.Lastname,
+			"seller_email":       currentuser.Email,
+			"seller_phonenumber": currentuser.Phone,
+			"seller_location":    currentuser.UserLocation,
+			"user_profile":       currentuser.UserImage,
+		}
+
 		productData := gin.H{
-			"productdata": productExist,
-			"images":      productImages,
+			"productdata":    productExist,
+			"images":         productImages,
+			"seller_details": sellerDetails,
 		}
 		globalutils.HandleSuccess("fetched product succesful", productData, context)
 		return
