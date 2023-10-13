@@ -2,7 +2,6 @@ package product
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 	"unicode"
 
@@ -37,7 +36,6 @@ func Fetchproducts() ([]models.Product, error) {
 			}
 
 			productList[i].MainImage = mainImage
-			fmt.Printf("this is image \n%v", productList[i].MainImage)
 		}
 	}
 	return productList, nil
@@ -79,14 +77,14 @@ func ValidateProductInput(product *AddProductInput) (bool, error) {
 
 			if len(value) < 3 {
 				return false, errors.New("product type should atleast be 3 characters long")
-			} else if regexp.MustCompile(charPattern).MatchString(product.ProductDescription) {
+			} else if regexp.MustCompile(charPattern).MatchString(product.ProductType) {
 				return false, errors.New("product type should not contain special character")
 			}
 		} else if value == product.Brand {
 
 			if value == "" {
 				return false, errors.New("product brand should not be empty")
-			} else if regexp.MustCompile(charPattern).MatchString(product.ProductDescription) {
+			} else if regexp.MustCompile(charPattern).MatchString(product.Brand) {
 				return false, errors.New("product brand should not contain special character")
 			}
 		} else if value == product.Category {

@@ -2,7 +2,6 @@ package product
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -219,7 +218,6 @@ func GetSingleProduct(context *gin.Context) {
 		productExist.MainImage = mainImage
 
 		// fetch user details of the product owner
-		fmt.Printf("user id\n%s", productExist.UserID)
 		currentuser, err := users.FindSellerById(string(productExist.UserID))
 		if err != nil {
 			globalutils.HandleError("error finding the seller", err, context)

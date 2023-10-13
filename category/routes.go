@@ -11,5 +11,6 @@ func CategoryRoutes(router *gin.Engine) {
 		categoryRoutes.POST("/addcategory", users.JWTAuthMiddleWare(), CreateCategory)
 		categoryRoutes.GET("/getcategories", GetCategories)
 		categoryRoutes.POST("/delete/:name", users.JWTAuthMiddleWare(), DeleteCategory)
+		// categoryRoutes.POST("/delete/:name", users.JWTAuthMiddleWare(), DeleteCategory)
 	}
 }

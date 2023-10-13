@@ -2,7 +2,6 @@ package mainad
 
 import (
 	"errors"
-	"log"
 	"regexp"
 
 	"eleliafrika.com/backend/database"
@@ -59,7 +58,6 @@ func UpdateMainAdutil(query string, update models.MainAd) (models.MainAd, error)
 	var updatedAd models.MainAd
 
 	result := database.Database.Model(&updatedAd).Where(query).Updates(update)
-	log.Printf("Database error: %s", result.Error)
 	if result.RowsAffected == 0 {
 		return models.MainAd{}, errors.New("could not update the main ad")
 	}
@@ -69,7 +67,6 @@ func RestoreAdUtil(query string) (models.MainAd, error) {
 	var updatedAd models.MainAd
 
 	result := database.Database.Model(&updatedAd).Where(query).Update("is_deleted", false)
-	log.Printf("Database error: %s", result.Error)
 	if result.RowsAffected == 0 {
 		return models.MainAd{}, errors.New("could not update the main ad")
 	}
@@ -80,7 +77,6 @@ func DeactivateUtil(query string) (models.MainAd, error) {
 	var updatedAd models.MainAd
 
 	result := database.Database.Model(&updatedAd).Where(query).Update("is_active", false)
-	log.Printf("Database error: %s", result.Error)
 	if result.RowsAffected == 0 {
 		return models.MainAd{}, errors.New("could not update the main ad")
 	}

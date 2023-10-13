@@ -3,7 +3,6 @@ package images
 import (
 	"bytes"
 	"encoding/base64"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -80,7 +79,7 @@ func UploadImageToBucket(productName string, imagefolder string, imageBytes []by
 	if err != nil {
 		return "", err
 	}
-	fmt.Printf("main image string \n%s\n", objectKey)
+
 	return objectKey, nil
 
 }

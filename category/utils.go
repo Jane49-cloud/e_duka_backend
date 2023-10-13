@@ -36,7 +36,7 @@ func UpdateCategory(categoryname string, update models.Category) (models.Categor
 }
 
 func ValidateCategoryInput(category *models.Category) (bool, error) {
-	charPattern := "[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>?]"
+	charPattern := "[!#%^&*()_\\=\\[\\]{};\"\\\\|<>?]"
 	if len(category.CategoryName) < 3 {
 		return false, errors.New("category name is too short")
 	} else if regexp.MustCompile(charPattern).MatchString(category.CategoryName) {

@@ -174,7 +174,6 @@ func UpdateUserUtil(query string, update models.User) (models.User, error) {
 	var updatedUser models.User
 
 	result := database.Database.Model(&updatedUser).Where(query).Updates(update)
-	fmt.Printf("result\n%v\n", result)
 	if result.RowsAffected == 0 {
 		return models.User{}, errors.New("could not update the user")
 	}

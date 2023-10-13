@@ -1,7 +1,6 @@
 package subcategory
 
 import (
-	"fmt"
 	"net/http"
 
 	"eleliafrika.com/backend/category"
@@ -62,7 +61,6 @@ func CreateSubCategory(context *gin.Context) {
 
 				// check if sub category already exists
 				subcategory, err := FetchSingleSubCategory(subcategoryInput.SubCategoryName)
-				fmt.Printf("name \n%v", subcategory.ParentCategory)
 				if err != nil {
 					response := models.Reply{
 						Message: "error validating the request",
