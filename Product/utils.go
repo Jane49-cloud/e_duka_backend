@@ -2,16 +2,18 @@ package product
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"unicode"
 
 	"eleliafrika.com/backend/database"
+	"eleliafrika.com/backend/images"
 	"eleliafrika.com/backend/models"
 )
 
 func FindSingleProduct(query string) (models.Product, error) {
 	var product models.Product
-	err := database.Database.Where(query).Find(&product).Error
+	err := database.Database.Where("product_id=?", query).Find(&product).Error
 	if err != nil {
 		return models.Product{}, err
 
@@ -24,6 +26,19 @@ func Fetchproducts() ([]models.Product, error) {
 	err := database.Database.Find(&productList).Error
 	if err != nil {
 		return []models.Product{}, err
+	}
+	if len(productList) != 0 {
+		for i, product := range productList {
+			mainImage, err := images.DownloadImageFromBucket(product.MainImage)
+			if err != nil {
+				return productList, err
+			} else if product.MainImage == "" {
+				return productList, errors.New("could not download image from the storage")
+			}
+
+			productList[i].MainImage = mainImage
+			fmt.Printf("this is image \n%v", productList[i].MainImage)
+		}
 	}
 	return productList, nil
 }

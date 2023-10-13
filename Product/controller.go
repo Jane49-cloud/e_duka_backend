@@ -188,30 +188,21 @@ func GetAllProducts(context *gin.Context) {
 
 	products, err := Fetchproducts()
 	if err != nil {
-		response := models.Reply{
-			Message: "Error fetching product",
-			Error:   err.Error(),
-			Success: false,
-		}
-		context.JSON(http.StatusBadRequest, response)
+		globalutils.HandleError("error fetching produts", err, context)
+		return
 	} else {
-		response := models.Reply{
-			Message: "all products fetched",
-			Success: true,
-			Data:    products,
-		}
-		context.JSON(http.StatusOK, response)
+		globalutils.HandleSuccess("all products fetched", products, context)
 		return
 	}
 
 }
 func GetSingleProduct(context *gin.Context) {
 
-	productid := context.Query("id")
+	productid := context.Param("id")
 
-	query := "product_id=" + productid
+	// query := "product_id=" + productid
 
-	productExist, err := FindSingleProduct(query)
+	productExist, err := FindSingleProduct(productid)
 	if err != nil {
 		globalutils.HandleError("could not fetch single product", err, context)
 		return

@@ -40,6 +40,7 @@ func ServeApplication() {
 	})
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
+	config.AllowMethods = []string{"POST", "GET", "PUT"}
 	config.AllowHeaders = []string{"Content-Type", "x-access-token"}
 	router.Use(cors.New(config))
 
@@ -52,6 +53,6 @@ func ServeApplication() {
 	brands.BrandRoutes(router)
 	mainad.Mainadsroutes(router)
 
-	router.Run(":8000")
+	router.Run("192.168.0.112:8000")
 	fmt.Println("Server running on port 8000")
 }
