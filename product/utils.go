@@ -26,7 +26,29 @@ func Fetchproducts() ([]Product, error) {
 	if err != nil {
 		return []Product{}, err
 	}
-	if len(productList) != 0 {
+	if len(productList) > 0 {
+		for i, product := range productList {
+			mainImage, err := images.DownloadImageFromBucket(product.MainImage)
+			if err != nil {
+				return productList, err
+			} else if product.MainImage == "" {
+				return productList, errors.New("could not download image from the storage")
+			}
+
+			productList[i].MainImage = mainImage
+		}
+	}
+	return productList, nil
+}
+
+func FetchAds() ([]Product, error) {
+	var productList []Product
+
+	err := database.Database.Where("is_deleted=?", false).Where("is_approved=?", true).Where("is_active=?", true).Where("is_suspended=?", false).Find(&productList).Error
+	if err != nil {
+		return []Product{}, err
+	}
+	if len(productList) > 0 {
 		for i, product := range productList {
 			mainImage, err := images.DownloadImageFromBucket(product.MainImage)
 			if err != nil {

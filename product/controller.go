@@ -186,10 +186,23 @@ func GetAllProducts(context *gin.Context) {
 
 	products, err := Fetchproducts()
 	if err != nil {
-		globalutils.HandleError("error fetching produts", err, context)
+		globalutils.HandleError("error fetching products", err, context)
 		return
 	} else {
 		globalutils.HandleSuccess("all products fetched", products, context)
+		return
+	}
+
+}
+func GetAllAds(context *gin.Context) {
+	var err error
+
+	products, err := FetchAds()
+	if err != nil {
+		globalutils.HandleError("error fetching ads", err, context)
+		return
+	} else {
+		globalutils.HandleSuccess("all ads fetched", products, context)
 		return
 	}
 

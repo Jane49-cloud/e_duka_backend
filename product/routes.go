@@ -11,6 +11,7 @@ func ProductRoutes(router *gin.Engine) {
 	{
 		authRoutes.POST("/addproduct", users.JWTAuthMiddleWare(), AddProduct)
 		authRoutes.GET("/getproducts", GetAllProducts)
+		authRoutes.GET("/getads", GetAllAds)
 		authRoutes.GET("/getproducts/single/:id", GetSingleProduct)
 		authRoutes.POST("/updateproduct/", UpdateProduct)
 		// authRoutes.GET("/getimages", images.Getimages)
