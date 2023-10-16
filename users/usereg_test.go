@@ -179,9 +179,93 @@ func TestUserRegData(t *testing.T) {
 	for _, input := range cases {
 		result, err := ValidateRegisterInput(&input.user)
 		if result != input.want {
-			t.Errorf("test failed %s%v", err, input)
-		} else {
-			t.Logf("test is a success")
+			t.Errorf("test failed %s", err)
 		}
 	}
+	t.Logf("test is a success")
+}
+
+func TestLoginData(t *testing.T) {
+	// email test
+	invalidEmailLength := LoginInput{" ", "Pass@1234"}
+	invalidEmailLength2 := LoginInput{"", "Pass@1234"}
+	invalidEmailType := LoginInput{"john@gmailcom", "Pass@1234"}
+	invalidEmailType2 := LoginInput{"johngmail.com", "Pass@1234"}
+	invalidSpecialCharInEmail := LoginInput{"johng@$%*&^mail.com", "Pass@1234"}
+
+	// password tests
+	invalidPasswordLength := LoginInput{"john@gmailcom", " "}
+	invalidPasswordLength2 := LoginInput{"john@gmailcom", " "}
+	noCaps := LoginInput{"john@gmailcom", "pass@1234"}
+	noSpecialChar := LoginInput{"johngmail.com", "Pass1234"}
+
+	// valid data
+	validData := LoginInput{"john@gmail.com", "Pass1234"}
+
+	cases := []struct {
+		name string
+		data LoginInput
+		want bool
+	}{
+		{
+			name: "should return invalid length email",
+			data: invalidEmailLength,
+			want: false,
+		},
+		{
+			name: "should return invalid length email",
+			data: invalidEmailLength2,
+			want: false,
+		},
+		{
+			name: "should return invalid type of email",
+			data: invalidEmailType,
+			want: false,
+		},
+		{
+			name: "should return invalid type of email",
+			data: invalidEmailType2,
+			want: false,
+		},
+		{
+			name: "should return invalid characters in email",
+			data: invalidSpecialCharInEmail,
+			want: false,
+		},
+
+		// cases for password
+		{
+			name: "should return invalid length for password",
+			data: invalidPasswordLength,
+			want: false,
+		},
+		{
+			name: "should return invalid length for password",
+			data: invalidPasswordLength2,
+			want: false,
+		},
+		{
+			name: "should return no caps in password",
+			data: noCaps,
+			want: false,
+		},
+		{
+			name: "should return no special characters in password",
+			data: noSpecialChar,
+			want: false,
+		},
+		{
+			name: "test passed",
+			data: validData,
+			want: false,
+		},
+	}
+
+	for _, input := range cases {
+		result, err := ValidateLoginInput(&input.data)
+		if result != input.want {
+			t.Errorf("test failed: %s%v", err, input.data)
+		}
+	}
+	t.Logf("test is successful")
 }
