@@ -16,7 +16,7 @@ type Product struct {
 	IsSuspended        bool   `gorm:"column:is_suspended;default:false;not null;" json:"issuspended"`
 	IsApproved         bool   `gorm:"column:is_approved;default:false;not null;" json:"isapproved"`
 	Quantity           int    `gorm:"default:0" json:"quantity"`
-	IsActive           bool   `gorm:"column:is_active;default:false" json:"isactive"`
+	IsActive           bool   `gorm:"column:is_active;default:true" json:"isactive"`
 	IsDeleted          bool   `gorm:"column:is_deleted;default:false" json:"isdeleted"`
 	ActiveUntil        string `gorm:"column:active_until" json:"activeuntil"`
 	ProductType        string `gorm:"column:product_type;" json:"producttype"`

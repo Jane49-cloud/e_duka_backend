@@ -53,7 +53,7 @@ func Register(context *gin.Context) {
 		return
 	}
 
-	user := models.User{
+	user := User{
 		UserID:          randomuuid.String(),
 		Firstname:       input.Firstname,
 		Middlename:      input.Middlename,
@@ -219,7 +219,7 @@ func GetSingleUser(context *gin.Context) {
 			if err != nil {
 				globalutils.HandleError("could not fetch the user image", err, context)
 			}
-			userData := models.User{
+			userData := User{
 				Firstname:  user.Firstname,
 				Middlename: user.Middlename,
 				Lastname:   user.Lastname,
@@ -241,7 +241,7 @@ func GetSingleUser(context *gin.Context) {
 
 func UpdateUser(context *gin.Context) {
 
-	var userUpdateData models.User
+	var userUpdateData User
 	if err := context.ShouldBindJSON(&userUpdateData); err != nil {
 		response := models.Reply{
 			Message: "could not bind the user data to the request needs",
@@ -271,7 +271,7 @@ func UpdateUser(context *gin.Context) {
 	} else {
 		userid := context.Query("userid")
 		query := "user_id=" + userid
-		newUser := models.User{
+		newUser := User{
 			Firstname:  userUpdateData.Firstname,
 			Middlename: userUpdateData.Middlename,
 			Lastname:   userUpdateData.Lastname,

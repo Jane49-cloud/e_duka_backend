@@ -1,4 +1,4 @@
-package models
+package users
 
 import (
 	"html"
@@ -19,7 +19,7 @@ type User struct {
 	Phone           string `gorm:"size:255;not null;unique" json:"phone"`
 	Password        string `gorm:"size:255;not null;" json:"password"`
 	UserImage       string `gorm:"size:255;" json:"userimage"`
-	Location        string `gorm:"size:255;not null" json:"location"`
+	Location        string `gorm:"column:location;size:255;not null" json:"location"`
 	NoOfProducts    int    `gorm:"default:0;column:total_products;default:0" json:"noofproducts"`
 	PackageType     string `gorm:"column:package_type;not null;default:'basic';" json:"packagetype"`
 	ActiveAds       int    `gorm:"column:active_ads;default:0;" json:"activeads"`
@@ -34,6 +34,22 @@ type User struct {
 	Notifications   int    `gorm:"column:notifications;default:0" json:"notifications"`
 	Chats           int    `gorm:"column:chats;default:0;" json:"chats"`
 	Inquiries       int    `gorm:"column:inquiries;default:0" json:"inquiries"`
+}
+
+type RegisterInput struct {
+	Firstname    string `gorm:"size:255;not null" json:"firstname"`
+	Middlename   string `gorm:"size:255;not null" json:"middlename"`
+	Lastname     string `gorm:"size:255;not null" json:"lastname"`
+	UserImage    string `gorm:"size:255;" json:"userimage"`
+	UserLocation string `gorm:"size:255;not null" json:"location"`
+	Email        string `gorm:"size:255;not null;unique" json:"email"`
+	Phone        string `gorm:"size:255;not null;unique" json:"phone"`
+	Password     string `gorm:"size:255;not null;" json:"password"`
+}
+
+type LoginInput struct {
+	Email    string `gorm:"size:255;not null;unique" json:"email"`
+	Password string `gorm:"size:255;not null;" json:"password"`
 }
 
 // function to create new user

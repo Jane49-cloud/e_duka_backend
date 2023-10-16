@@ -18,6 +18,7 @@ func ProductRoutes(router *gin.Engine) {
 		authRoutes.POST("/deleteproduct", DeleteProduct)
 		authRoutes.POST("/restore", RestoreProduct)
 		authRoutes.POST("/activate", ActivateProduct)
+		authRoutes.POST("/approve", ApproveProduct)
 		authRoutes.POST("/deactivate", DeactivateProduct)
 	}
 }

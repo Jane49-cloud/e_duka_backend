@@ -14,7 +14,6 @@ import (
 
 	"eleliafrika.com/backend/database"
 	"eleliafrika.com/backend/images"
-	"eleliafrika.com/backend/models"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
@@ -22,7 +21,7 @@ import (
 
 var privateKey = []byte(os.Getenv("JWT_PRIVATE_KEY"))
 
-func GenerateJWT(user models.User) (string, error) {
+func GenerateJWT(user User) (string, error) {
 	tokenTTL, _ := strconv.Atoi(os.Getenv("TOKEN_TTL"))
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email": user.Email,
@@ -69,10 +68,10 @@ func JWTAuthMiddleWare() gin.HandlerFunc {
 	}
 }
 
-func CurrentUser(context *gin.Context) (models.User, error) {
+func CurrentUser(context *gin.Context) (User, error) {
 	err := ValidateJWT(context)
 	if err != nil {
-		return models.User{}, err
+		return User{}, err
 	}
 	token, _ := GetToken(context)
 	claims, _ := token.Claims.(jwt.MapClaims)
@@ -80,7 +79,7 @@ func CurrentUser(context *gin.Context) (models.User, error) {
 
 	user, err := FindUserByEmail(useremail)
 	if err != nil {
-		return models.User{}, err
+		return User{}, err
 	}
 	return user, nil
 }
@@ -187,12 +186,12 @@ func ValidateLoginInput(user *LoginInput) (bool, error) {
 	return true, nil
 }
 
-func UpdateUserUtil(query string, update models.User) (models.User, error) {
-	var updatedUser models.User
+func UpdateUserUtil(query string, update User) (User, error) {
+	var updatedUser User
 
 	result := database.Database.Model(&updatedUser).Where(query).Updates(update)
 	if result.RowsAffected == 0 {
-		return models.User{}, errors.New("could not update the user")
+		return User{}, errors.New("could not update the user")
 	}
 	return updatedUser, nil
 }

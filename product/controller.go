@@ -186,7 +186,7 @@ func GetAllProducts(context *gin.Context) {
 
 	products, err := Fetchproducts()
 	if err != nil {
-		globalutils.HandleError("error fetching products", err, context)
+		globalutils.HandleError("error fetching produts", err, context)
 		return
 	} else {
 		globalutils.HandleSuccess("all products fetched", products, context)
@@ -397,6 +397,33 @@ func ActivateProduct(context *gin.Context) {
 			globalutils.HandleError("failed in activating product", errors.New("could not activate product!!try again"), context)
 		} else {
 			globalutils.HandleSuccess("succesfully activated the product", productExist, context)
+		}
+	}
+
+}
+
+func ApproveProduct(context *gin.Context) {
+	productid := context.Query("id")
+	query := "product_id=" + productid
+
+	// check if product exist
+	productExist, err := FindSingleProduct(query)
+	if err != nil {
+		globalutils.HandleError("error finding product", err, context)
+	} else if productExist.ProductName == "" {
+		globalutils.HandleSuccess("the product does not exist", Product{}, context)
+	} else if productExist.IsDeleted {
+		globalutils.HandleSuccess("cannot approve a deleted product!!Please restore product first", productExist, context)
+	} else if productExist.IsApproved {
+		globalutils.HandleSuccess("product is already approved", productExist, context)
+	} else {
+		success, err := ApproveAd(query)
+		if err != nil {
+			globalutils.HandleError("error approvinging  product", err, context)
+		} else if !success {
+			globalutils.HandleError("failed in approving product", errors.New("could not approve product!!try again"), context)
+		} else {
+			globalutils.HandleSuccess("succesfully approved the product", productExist, context)
 		}
 	}
 
