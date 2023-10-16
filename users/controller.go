@@ -5,6 +5,7 @@ import (
 
 	"time"
 
+	globalutils "eleliafrika.com/backend/global_utils"
 	"eleliafrika.com/backend/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -44,14 +45,21 @@ func Register(context *gin.Context) {
 	currentTime := time.Now()
 	formattedTime := currentTime.Format("2006-01-02 15:04:05")
 
+	userImagepath, err := UploadUserImage(input.UserImage, input.Firstname+"-"+input.Lastname)
+
+	if err != nil {
+		globalutils.HandleError("error uploading user image", err, context)
+		return
+	}
+
 	user := models.User{
 		UserID:          randomuuid.String(),
 		Firstname:       input.Firstname,
 		Middlename:      input.Middlename,
 		Lastname:        input.Lastname,
-		UserImage:       input.UserImage,
 		Location:        input.UserLocation,
 		Email:           input.Email,
+		UserImage:       userImagepath,
 		Phone:           input.Phone,
 		Password:        input.Password,
 		DateJoined:      formattedTime,

@@ -4,6 +4,7 @@ import (
 	"testing"
 )
 
+// testt for register data
 func TestUserRegData(t *testing.T) {
 	// cases for empty values
 	invalidFnameLength := RegisterInput{"ia", "Does", "Doe", "user image", "Nyeri", "JohnDoe@gmail.com", "0719722292", "Pass@1234"}
@@ -184,6 +185,8 @@ func TestUserRegData(t *testing.T) {
 	}
 	t.Logf("test is a success")
 }
+
+// test for login data
 
 func TestLoginData(t *testing.T) {
 	// email test

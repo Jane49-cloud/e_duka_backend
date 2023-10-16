@@ -1,6 +1,7 @@
 package users
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"net/http"
@@ -12,9 +13,11 @@ import (
 	"unicode"
 
 	"eleliafrika.com/backend/database"
+	"eleliafrika.com/backend/images"
 	"eleliafrika.com/backend/models"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
 )
 
 var privateKey = []byte(os.Getenv("JWT_PRIVATE_KEY"))
@@ -192,4 +195,21 @@ func UpdateUserUtil(query string, update models.User) (models.User, error) {
 		return models.User{}, errors.New("could not update the user")
 	}
 	return updatedUser, nil
+}
+
+func UploadUserImage(imageString string, username string) (string, error) {
+
+	imageuuid := uuid.New()
+	filename := strings.ReplaceAll(username, " ", "") + imageuuid.String()
+
+	imageBytes, err := base64.StdEncoding.DecodeString(imageString)
+	if err != nil {
+		return "", err
+	}
+
+	imagepath, err := images.UploadImageToBucket(username, "user-images", imageBytes, filename)
+	if err != nil {
+		return "", nil
+	}
+	return imagepath, nil
 }

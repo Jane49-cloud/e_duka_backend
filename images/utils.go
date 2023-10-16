@@ -44,7 +44,7 @@ func GetSpecificProductImage(productid string) ([]string, error) {
 	return images, nil
 }
 
-func UploadImageToBucket(productName string, imagefolder string, imageBytes []byte, imagename string) (string, error) {
+func UploadImageToBucket(name string, imagefolder string, imageBytes []byte, imagename string) (string, error) {
 
 	awsSecret := os.Getenv("SECRET_KEY")
 	awsAccessKey := os.Getenv("ACCESS_KEY")
@@ -64,7 +64,7 @@ func UploadImageToBucket(productName string, imagefolder string, imageBytes []by
 	fileType := http.DetectContentType(imageBytes)
 
 	svc := s3.New(sess)
-	objectKey := "assets/productImages/" + productName + "/" + imagefolder + "/" + imagename
+	objectKey := "assets/productImages/" + name + "/" + imagefolder + "/" + imagename
 	storageLocation := "e-duka-images"
 
 	input := &s3.PutObjectInput{
