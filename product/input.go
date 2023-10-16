@@ -1,9 +1,6 @@
 package product
 
-import "gorm.io/gorm"
-
 type AddProductInput struct {
-	gorm.Model
 	ProductName        string   `gorm:"column:product_name;unique;not null" json:"productname"`
 	ProductPrice       string   `gorm:"column:product_price;not null" json:"productprice"`
 	ProductDescription string   `gorm:"column:product_description;" json:"productdescription"`

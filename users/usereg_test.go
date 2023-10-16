@@ -180,7 +180,7 @@ func TestUserRegData(t *testing.T) {
 	for _, input := range cases {
 		result, err := ValidateRegisterInput(&input.user)
 		if result != input.want {
-			t.Errorf("test failed %s", err)
+			t.Errorf("test failed %v", err)
 		}
 	}
 	t.Logf("test is a success")

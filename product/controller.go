@@ -108,14 +108,13 @@ func AddProduct(context *gin.Context) {
 					globalutils.HandleError("error uploading main image", err, context)
 					return
 				}
-				product := models.Product{
+				product := Product{
 					ProductID:          productuuid.String(),
 					ProductName:        productInput.ProductName,
 					ProductPrice:       productInput.ProductPrice,
 					ProductDescription: productInput.ProductDescription,
 					UserID:             user.UserID,
 					MainImage:          mainImagePath,
-					ProductStatus:      "Active",
 					Quantity:           productInput.Quantity,
 					ProductType:        productInput.ProductType,
 					TotalLikes:         0,
@@ -313,7 +312,7 @@ func UpdateProduct(context *gin.Context) {
 					context.JSON(http.StatusBadRequest, response)
 					return
 				} else {
-					newproduct := models.Product{
+					newproduct := Product{
 						ProductName:        productUpdate.ProductName,
 						ProductPrice:       productUpdate.ProductPrice,
 						ProductDescription: productUpdate.ProductDescription,
@@ -372,7 +371,7 @@ func ActivateProduct(context *gin.Context) {
 	if err != nil {
 		globalutils.HandleError("error finding product", err, context)
 	} else if productExist.ProductName == "" {
-		globalutils.HandleSuccess("the product does not exist", models.Product{}, context)
+		globalutils.HandleSuccess("the product does not exist", Product{}, context)
 	} else if productExist.IsDeleted {
 		globalutils.HandleSuccess("cannot activate a deleted product!!Please restore product first", productExist, context)
 	} else if productExist.IsActive {
@@ -399,7 +398,7 @@ func DeactivateProduct(context *gin.Context) {
 	if err != nil {
 		globalutils.HandleError("error finding product", err, context)
 	} else if productExist.ProductName == "" {
-		globalutils.HandleSuccess("the product does not exist", models.Product{}, context)
+		globalutils.HandleSuccess("the product does not exist", Product{}, context)
 	} else if productExist.IsDeleted {
 		globalutils.HandleSuccess("product is deleted!!Please restore product first", productExist, context)
 	} else if !productExist.IsActive {
@@ -426,7 +425,7 @@ func DeleteProduct(context *gin.Context) {
 	if err != nil {
 		globalutils.HandleError("error finding product", err, context)
 	} else if productExist.ProductName == "" {
-		globalutils.HandleSuccess("the product does not exist", models.Product{}, context)
+		globalutils.HandleSuccess("the product does not exist", Product{}, context)
 	} else if productExist.IsDeleted {
 		globalutils.HandleSuccess("product already deleted", productExist, context)
 	} else if productExist.IsActive {
@@ -453,7 +452,7 @@ func RestoreProduct(context *gin.Context) {
 	if err != nil {
 		globalutils.HandleError("error finding product", err, context)
 	} else if productExist.ProductName == "" {
-		globalutils.HandleSuccess("the product does not exist", models.Product{}, context)
+		globalutils.HandleSuccess("the product does not exist", Product{}, context)
 	} else if !productExist.IsDeleted {
 		globalutils.HandleSuccess("product is not deleted", productExist, context)
 	} else {
