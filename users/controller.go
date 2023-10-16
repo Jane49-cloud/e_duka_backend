@@ -6,6 +6,7 @@ import (
 	"time"
 
 	globalutils "eleliafrika.com/backend/global_utils"
+	"eleliafrika.com/backend/images"
 	"eleliafrika.com/backend/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -213,12 +214,17 @@ func GetSingleUser(context *gin.Context) {
 			context.JSON(http.StatusOK, response)
 			return
 		} else {
+
+			userImage, err := images.DownloadImageFromBucket(user.UserImage)
+			if err != nil {
+				globalutils.HandleError("could not fetch the user image", err, context)
+			}
 			userData := models.User{
 				Firstname:  user.Firstname,
 				Middlename: user.Middlename,
 				Lastname:   user.Lastname,
 				Email:      user.Email,
-				UserImage:  user.UserImage,
+				UserImage:  userImage,
 				Location:   user.Location,
 				UserID:     user.UserID,
 			}
