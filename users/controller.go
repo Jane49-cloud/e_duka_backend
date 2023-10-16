@@ -50,7 +50,7 @@ func Register(context *gin.Context) {
 		Middlename:      input.Middlename,
 		Lastname:        input.Lastname,
 		UserImage:       input.UserImage,
-		UserLocation:    input.UserLocation,
+		Location:        input.UserLocation,
 		Email:           input.Email,
 		Phone:           input.Phone,
 		Password:        input.Password,
@@ -206,13 +206,13 @@ func GetSingleUser(context *gin.Context) {
 			return
 		} else {
 			userData := models.User{
-				Firstname:    user.Firstname,
-				Middlename:   user.Middlename,
-				Lastname:     user.Lastname,
-				Email:        user.Email,
-				UserImage:    user.UserImage,
-				UserLocation: user.UserLocation,
-				UserID:       user.UserID,
+				Firstname:  user.Firstname,
+				Middlename: user.Middlename,
+				Lastname:   user.Lastname,
+				Email:      user.Email,
+				UserImage:  user.UserImage,
+				Location:   user.Location,
+				UserID:     user.UserID,
 			}
 			response := models.Reply{
 				Message: "Succesfully fetched the user",
@@ -258,13 +258,13 @@ func UpdateUser(context *gin.Context) {
 		userid := context.Query("userid")
 		query := "user_id=" + userid
 		newUser := models.User{
-			Firstname:    userUpdateData.Firstname,
-			Middlename:   userUpdateData.Middlename,
-			Lastname:     userUpdateData.Lastname,
-			UserImage:    userUpdateData.UserImage,
-			UserLocation: userUpdateData.UserLocation,
-			Email:        userUpdateData.Email,
-			Phone:        userUpdateData.Phone,
+			Firstname:  userUpdateData.Firstname,
+			Middlename: userUpdateData.Middlename,
+			Lastname:   userUpdateData.Lastname,
+			UserImage:  userUpdateData.UserImage,
+			Location:   userUpdateData.Location,
+			Email:      userUpdateData.Email,
+			Phone:      userUpdateData.Phone,
 		}
 		updateUser, err := UpdateUserUtil(query, newUser)
 		if err != nil {

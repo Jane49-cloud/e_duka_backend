@@ -227,7 +227,7 @@ func GetSingleProduct(context *gin.Context) {
 			"seller_name":        currentuser.Firstname + " " + currentuser.Lastname,
 			"seller_email":       currentuser.Email,
 			"seller_phonenumber": currentuser.Phone,
-			"seller_location":    currentuser.UserLocation,
+			"seller_location":    currentuser.Location,
 			"user_profile":       currentuser.UserImage,
 		}
 

@@ -83,18 +83,23 @@ func CurrentUser(context *gin.Context) (models.User, error) {
 }
 
 func ValidateRegisterInput(user *RegisterInput) (bool, error) {
-	userDetails := []string{user.Email, user.Firstname, user.Lastname, user.UserLocation, user.UserImage, user.Phone, user.Password}
+	userDetails := []string{user.Email, user.Firstname, user.Lastname, user.UserLocation, user.Phone, user.Password}
 	charPattern := "[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>?]"
 	numPattern := "[0-9]"
 	capPattern := "[A-Z]"
 	for _, value := range userDetails {
+		value = strings.ReplaceAll(value, " ", "")
 		if value == user.Email {
+			user.Email = strings.ToLower(user.Email)
+			emailPattern := "[!#$%^&*()+\\=\\[\\]{};':\"\\\\|,<>?]"
 			if len(value) < 8 {
-				return false, errors.New("invalid email format!email should contain @, . and should longer than 8 characters")
+				return false, errors.New("invalid email format!email should contain @, . and should be longer than 8 characters")
 			} else if !strings.Contains(user.Email, "@") {
-				return false, errors.New("invalid email format!email should contain @, . and should longer than 8 characters")
+				return false, errors.New("invalid email format!email should contain @, . and should be longer than 8 characters")
 			} else if !strings.Contains(user.Email, ".") {
-				return false, errors.New("invalid email format!email should contain @, . and should longer than 8 characters")
+				return false, errors.New("invalid email format!email should contain @, . and should be longer than 8 characters")
+			} else if regexp.MustCompile(emailPattern).MatchString(user.Email) {
+				return false, errors.New("invalid characters in email")
 			}
 		} else if value == user.Phone {
 			if len(value) < 10 {
@@ -116,6 +121,13 @@ func ValidateRegisterInput(user *RegisterInput) (bool, error) {
 				return false, errors.New("password must contain atleast numerical digit")
 			} else if !regexp.MustCompile(capPattern).MatchString(user.Password) {
 				return false, errors.New("password must contain a capital letter")
+			}
+		} else if value == user.UserLocation {
+			user.UserLocation = strings.ToLower(user.UserLocation)
+			if len(value) < 3 {
+				return false, errors.New("location is too short")
+			} else if regexp.MustCompile(numPattern).MatchString(user.UserLocation) {
+				return false, errors.New("location must not contain a numerical digit")
 			}
 		} else if len(value) < 3 {
 			return false, errors.New("invalid input length for field")

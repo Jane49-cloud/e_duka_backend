@@ -11,29 +11,29 @@ import (
 
 type User struct {
 	gorm.Model
-	UserID                  string   `gorm:"not null;primary_key;unique" json:"userid"`
-	Firstname               string   `gorm:"size:255;not null" json:"username"`
-	Middlename              string   `gorm:"size:255;not null" json:"middlename"`
-	Lastname                string   `gorm:"size:255;not null" json:"lastname"`
-	UserImage               string   `gorm:"size:255;" json:"userimage"`
-	UserLocation            string   `gorm:"size:255;not null" json:"location"`
-	Email                   string   `gorm:"size:255;not null;unique" json:"email"`
-	Phone                   string   `gorm:"size:255;not null;unique" json:"phone"`
-	Password                string   `gorm:"size:255;not null;" json:"password"`
-	Totalproducts           int      `gorm:"default:0;column:total_products;default:0" json:"totalproducts"`
-	Products                []string `gorm:"column:products;type:jsonb;default:null" json:"products"`
-	UserType                string   `gorm:"column:user_type;not null;default:'visitor';" json:"usertype"`
-	TotalLikes              int      `gorm:"default:0;column:total_likes;" json:"totallikes"`
-	TotalViews              int      `gorm:"default:0;column:total_views;" json:"totalviews"`
-	TotalEngagements        int      `gorm:"default:0;column:total_engagements;" json:"totalengagements"`
-	Followers               int      `gorm:"default:0;column:followers;" json:"followers"`
-	Follows                 int      `gorm:"default:0;column:follows;" json:"follows"`
-	DateJoined              string   `gorm:"column:date_joined;" json:"datejoined"`
-	LastLoggedIn            string   `gorm:"column:last_logged_in;" json:"lastlogin"`
-	LastInteraction         string   `gorm:"column:last_interaction;" json:"lastinteraction"`
-	LastproductAdd          string   `gorm:"column:last_product_add;" json:"lastproductadd"`
-	TotalActiveproducts     int      `gorm:"default:0;column:total_active_products;" json:"totalactiveproducts"`
-	DailyAverageEngagements string   `gorm:"default:0;column:daily_average_engagements;" json:"dailyaverageengagements"`
+	UserID          string `gorm:"not null;primary_key;unique" json:"userid"`
+	Firstname       string `gorm:"size:255;not null" json:"firstname"`
+	Middlename      string `gorm:"size:255;not null" json:"middlename"`
+	Lastname        string `gorm:"size:255;not null" json:"lastname"`
+	Email           string `gorm:"size:255;not null;unique" json:"email"`
+	Phone           string `gorm:"size:255;not null;unique" json:"phone"`
+	Password        string `gorm:"size:255;not null;" json:"password"`
+	UserImage       string `gorm:"size:255;" json:"userimage"`
+	Location        string `gorm:"size:255;not null" json:"location"`
+	NoOfProducts    int    `gorm:"default:0;column:total_products;default:0" json:"noofproducts"`
+	PackageType     string `gorm:"column:package_type;not null;default:'basic';" json:"packagetype"`
+	ActiveAds       int    `gorm:"column:active_ads;default:0;" json:"activeads"`
+	InActiveAds     int    `gorm:"column:in_active_ads;default:0;" json:"inactiveads"`
+	DeletedAds      int    `gorm:"column:deleted_ads;default:0;" json:"deletedads"`
+	UserType        string `gorm:"column:user_type;not null;default:'visitor';" json:"usertype"`
+	TotalLikes      int    `gorm:"default:0;column:total_likes;" json:"totallikes"`
+	TotalViews      int    `gorm:"default:0;column:total_views;" json:"totalviews"`
+	DateJoined      string `gorm:"column:date_joined;" json:"datejoined"`
+	LastLoggedIn    string `gorm:"column:last_logged_in;" json:"lastlogin"`
+	LastInteraction string `gorm:"column:last_interaction;" json:"lastinteraction"`
+	Notifications   int    `gorm:"column:notifications;default:0" json:"notifications"`
+	Chats           int    `gorm:"column:chats;default:0;" json:"chats"`
+	Inquiries       int    `gorm:"column:inquiries;default:0" json:"inquiries"`
 }
 
 // function to create new user
