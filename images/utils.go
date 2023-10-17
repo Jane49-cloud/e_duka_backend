@@ -120,3 +120,28 @@ func DownloadImageFromBucket(objectKey string) (string, error) {
 
 	return imageString, nil
 }
+
+func DeleteImageFromBucket(bucketName string, objectKey string) (bool, error) {
+	awsSecret := os.Getenv("SECRET_KEY")
+	awsAccessKey := os.Getenv("ACCESS_KEY")
+	token := os.Getenv("TOKEN")
+
+	creds := credentials.NewStaticCredentials(awsAccessKey, awsSecret, token)
+	cfg := aws.NewConfig().WithRegion("af-south-1").WithCredentials(creds)
+
+	sess, err := session.NewSession(cfg)
+	if err != nil {
+		return false, err
+	}
+
+	svc := s3.New(sess)
+
+	input := &s3.DeleteObjectInput{
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(objectKey),
+	}
+
+	_, err = svc.DeleteObject(input)
+
+	return true, nil
+}

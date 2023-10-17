@@ -156,7 +156,8 @@ func ValidateRegisterInput(user *RegisterInput) (bool, error) {
 
 func ValidateLoginInput(user *LoginInput) (bool, error) {
 	userDetails := []string{user.Email, user.Password}
-	charPattern := "[!#$%^&*()+\\=\\[\\]{};':\"\\\\|,<>?]"
+	charPattern := "[!#$%^&*()+\\=\\[\\]{};':\"\\\\|,<>?@.-]"
+	emailPattern := "[!#$%^&*()+\\=\\[\\]{};':\"\\\\|,<>?]"
 	numPattern := "[0-9]"
 	capPattern := "[A-Z]"
 	for _, value := range userDetails {
@@ -167,7 +168,7 @@ func ValidateLoginInput(user *LoginInput) (bool, error) {
 				return false, errors.New("invalid email format!email should contain @, . and should longer than 8 characters")
 			} else if !strings.Contains(user.Email, ".") {
 				return false, errors.New("invalid email format!email should contain @, . and should longer than 8 characters")
-			} else if !regexp.MustCompile(charPattern).MatchString(user.Email) {
+			} else if regexp.MustCompile(emailPattern).MatchString(user.Email) {
 				return false, errors.New("invalid characters in email")
 			}
 		} else if value == user.Password {

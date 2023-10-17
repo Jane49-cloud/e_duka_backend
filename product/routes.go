@@ -14,11 +14,10 @@ func ProductRoutes(router *gin.Engine) {
 		authRoutes.GET("/getads", GetAllAds)
 		authRoutes.GET("/getproducts/single/:id", GetSingleProduct)
 		authRoutes.POST("/updateproduct/", UpdateProduct)
-		// authRoutes.GET("/getimages", images.Getimages)
-		authRoutes.POST("/deleteproduct", DeleteProduct)
-		authRoutes.POST("/restore", RestoreProduct)
-		authRoutes.POST("/activate", ActivateProduct)
-		authRoutes.POST("/approve", ApproveProduct)
-		authRoutes.POST("/deactivate", DeactivateProduct)
+		authRoutes.POST("/deleteproduct", users.JWTAuthMiddleWare(), DeleteProduct)
+		authRoutes.POST("/restore", users.JWTAuthMiddleWare(), RestoreProduct)
+		authRoutes.POST("/activate", users.JWTAuthMiddleWare(), ActivateProduct)
+		authRoutes.POST("/approve", users.JWTAuthMiddleWare(), ApproveProduct)
+		authRoutes.POST("/deactivate", users.JWTAuthMiddleWare(), DeactivateProduct)
 	}
 }

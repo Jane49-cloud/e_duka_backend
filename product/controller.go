@@ -2,6 +2,7 @@ package product
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -156,10 +157,15 @@ func AddProduct(context *gin.Context) {
 				savedProduct, err := product.Save()
 
 				if err != nil {
-					context.JSON(http.StatusBadRequest, gin.H{
-						"error with save": err.Error(),
-						"success":         false,
-					})
+
+					// delete saved image
+					_, err := images.DeleteImageFromBucket("e-duka-images", strings.ReplaceAll(mainImagePath, "e-duka-images/", ""))
+					if err != nil {
+						globalutils.HandleError("erorr occured deleting the image file", err, context)
+						return
+					}
+
+					globalutils.HandleError("error saving the product", err, context)
 					return
 				}
 				imageString, err := images.DownloadImageFromBucket(mainImagePath)
@@ -212,7 +218,7 @@ func GetSingleProduct(context *gin.Context) {
 	productid := context.Param("id")
 
 	// query := "product_id=" + productid
-
+	fmt.Printf("product id \n%s\n", productid)
 	productExist, err := FindSingleProduct(productid)
 	if err != nil {
 		globalutils.HandleError("could not fetch single product", err, context)
@@ -380,7 +386,7 @@ func ActivateProduct(context *gin.Context) {
 	query := "product_id=" + productid
 
 	// check if product exist
-	productExist, err := FindSingleProduct(query)
+	productExist, err := FindSingleProduct(productid)
 	if err != nil {
 		globalutils.HandleError("error finding product", err, context)
 	} else if productExist.ProductName == "" {
@@ -406,8 +412,10 @@ func ApproveProduct(context *gin.Context) {
 	productid := context.Query("id")
 	query := "product_id=" + productid
 
+	id := strings.ReplaceAll(productid, "'", "")
+
 	// check if product exist
-	productExist, err := FindSingleProduct(query)
+	productExist, err := FindSingleProduct(id)
 	if err != nil {
 		globalutils.HandleError("error finding product", err, context)
 	} else if productExist.ProductName == "" {
