@@ -385,8 +385,10 @@ func ActivateProduct(context *gin.Context) {
 	productid := context.Query("id")
 	query := "product_id=" + productid
 
+	id := strings.ReplaceAll(productid, "'", "")
+
 	// check if product exist
-	productExist, err := FindSingleProduct(productid)
+	productExist, err := FindSingleProduct(id)
 	if err != nil {
 		globalutils.HandleError("error finding product", err, context)
 	} else if productExist.ProductName == "" {
