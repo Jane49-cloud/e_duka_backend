@@ -2,7 +2,6 @@ package product
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -107,7 +106,7 @@ func AddProduct(context *gin.Context) {
 					Category:           productInput.Category,
 					SubCategory:        productInput.SubCategory,
 				}
-				fmt.Printf("saving to db \n%v\n", product)
+
 				savedProduct, err := product.Save()
 
 				if err != nil {
@@ -118,7 +117,6 @@ func AddProduct(context *gin.Context) {
 					return
 				}
 
-				fmt.Println("saving other images to s3")
 				imagesPath, err := images.UploadOtherImages(productInput.ProductImages, product.ProductName)
 				if err != nil {
 					globalutils.HandleError("error uploading product images", err, context)
@@ -166,7 +164,6 @@ func AddProduct(context *gin.Context) {
 func GetAllProducts(context *gin.Context) {
 
 	products, err := Fetchproducts()
-	fmt.Printf("product\n%v", products)
 	if err != nil {
 		globalutils.HandleError("error fetching products", err, context)
 		return
@@ -194,7 +191,7 @@ func GetSingleProduct(context *gin.Context) {
 	productid := context.Param("id")
 
 	// query := "product_id=" + productid
-	fmt.Printf("product id \n%s\n", productid)
+
 	productExist, err := FindSingleProduct(productid)
 	if err != nil {
 		globalutils.HandleError("could not fetch single product", err, context)
@@ -242,7 +239,6 @@ func GetSingleAd(context *gin.Context) {
 	productid := context.Param("id")
 
 	// query := "product_id=" + productid
-	fmt.Printf("product id \n%s\n", productid)
 	productExist, err := FindSingleAd(productid)
 	if err != nil {
 		globalutils.HandleError("could not fetch single ad", err, context)
