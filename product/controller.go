@@ -164,7 +164,6 @@ func AddProduct(context *gin.Context) {
 	}
 }
 func GetAllProducts(context *gin.Context) {
-	var err error
 
 	products, err := Fetchproducts()
 	fmt.Printf("product\n%v", products)
@@ -529,4 +528,29 @@ func RestoreProduct(context *gin.Context) {
 		}
 	}
 
+}
+
+func FetchSingleUserProducts(context *gin.Context) {
+	id := context.Query("id")
+	products, err := FetchSingleUserProductsUtil(strings.ReplaceAll(id, "'", ""))
+	if err != nil {
+		globalutils.HandleError("error fetching single user products", err, context)
+		return
+	} else {
+		globalutils.HandleSuccess("single user products fetched", products, context)
+		return
+	}
+}
+
+func FetchSingleUserAds(context *gin.Context) {
+	id := context.Query("id")
+
+	products, err := FetchSingleUserAdsUtil(strings.ReplaceAll(id, "'", ""))
+	if err != nil {
+		globalutils.HandleError("error fetching single user products", err, context)
+		return
+	} else {
+		globalutils.HandleSuccess("single user products fetched", products, context)
+		return
+	}
 }
