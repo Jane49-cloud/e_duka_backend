@@ -11,5 +11,6 @@ func AuthRoutes(router *gin.Engine) {
 		authRoutes.GET("/fetchuser", FetchSingleUser)
 		authRoutes.POST("/updateuser", JWTAuthMiddleWare(), UpdateUser)
 		authRoutes.POST("/approveuser", JWTAuthMiddleWare(), ApproveUser)
+		authRoutes.POST("/revokeuser", JWTAuthMiddleWare(), RevokeUser)
 	}
 }

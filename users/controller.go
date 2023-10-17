@@ -324,12 +324,39 @@ func ApproveUser(context *gin.Context) {
 	} else if userExists.Firstname == "" {
 		globalutils.HandleError("user does not exist", errors.New("user cannot be found"), context)
 		return
+	} else if userExists.IsApproved {
+		globalutils.HandleSuccess("user is already approved", User{}, context)
+		return
 	} else {
 		_, err := UpdateUserSpecificField(query, "is_approved", true)
 		if err != nil {
-			globalutils.HandleError("error updating user", err, context)
+			globalutils.HandleError("error approving user", err, context)
 			return
 		}
 		globalutils.HandleSuccess("succesfuly approved the user", User{}, context)
+	}
+}
+func RevokeUser(context *gin.Context) {
+	id := context.Query("id")
+
+	query := "user_id=" + id
+
+	userExists, err := FindUserById(strings.ReplaceAll(id, "'", ""))
+	if err != nil {
+		globalutils.HandleError("error finding user", err, context)
+		return
+	} else if userExists.Firstname == "" {
+		globalutils.HandleError("user does not exist", errors.New("user cannot be found"), context)
+		return
+	} else if !userExists.IsApproved {
+		globalutils.HandleSuccess("user is already revoked", User{}, context)
+		return
+	} else {
+		_, err := UpdateUserSpecificField(query, "is_approved", false)
+		if err != nil {
+			globalutils.HandleError("error revoking user", err, context)
+			return
+		}
+		globalutils.HandleSuccess("succesfuly revoked the user", User{}, context)
 	}
 }
