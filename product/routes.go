@@ -13,6 +13,7 @@ func ProductRoutes(router *gin.Engine) {
 		authRoutes.GET("/getproducts", GetAllProducts)
 		authRoutes.GET("/getads", GetAllAds)
 		authRoutes.GET("/getproducts/single/:id", GetSingleProduct)
+		authRoutes.GET("/getads/single/:id", GetSingleAd)
 		authRoutes.POST("/updateproduct/", UpdateProduct)
 		authRoutes.POST("/deleteproduct", users.JWTAuthMiddleWare(), DeleteProduct)
 		authRoutes.POST("/restore", users.JWTAuthMiddleWare(), RestoreProduct)

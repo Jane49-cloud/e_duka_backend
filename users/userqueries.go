@@ -20,7 +20,7 @@ func FindUserByEmail(email string) (User, error) {
 }
 
 // function to query user with id
-func FindSellerById(id string) (User, error) {
+func FindUserById(id string) (User, error) {
 	var user User
 	err := database.Database.Where("user_id=?", id).Find(&user).Error
 	if err != nil {

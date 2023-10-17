@@ -8,13 +8,13 @@ import (
 )
 
 func HandleError(message string, err error, context *gin.Context) {
-	response := models.Reply{
-		Message: message,
-		Error:   err.Error(),
-		Success: false,
+	response := gin.H{
+		"Message": message,
+		"Error":   err.Error(),
+		"Success": false,
 	}
 	context.JSON(http.StatusBadRequest, response)
-	return
+
 }
 
 func HandleSuccess(message string, data interface{}, context *gin.Context) {
@@ -24,5 +24,22 @@ func HandleSuccess(message string, data interface{}, context *gin.Context) {
 		Success: true,
 	}
 	context.JSON(http.StatusOK, response)
-	return
+
+}
+func UnAuthenticated(context *gin.Context) {
+	response := gin.H{
+		"Message": "not authenticated",
+		"Success": false,
+	}
+	context.JSON(http.StatusNetworkAuthenticationRequired, response)
+
+}
+
+func UnAuthorized(context *gin.Context) {
+	response := gin.H{
+		"Message": "not authorized for the action",
+		"Success": false,
+	}
+	context.JSON(http.StatusUnauthorized, response)
+
 }

@@ -21,12 +21,7 @@ func AddProduct(context *gin.Context) {
 	var productInput AddProductInput
 
 	if err := context.ShouldBind(&productInput); err != nil {
-		response := models.Reply{
-			Message: "could not bind data from the user",
-			Error:   err.Error(),
-			Success: false,
-		}
-		context.JSON(http.StatusBadRequest, response)
+		globalutils.HandleError("could not bind data from the user", err, context)
 		return
 	}
 
@@ -55,50 +50,32 @@ func AddProduct(context *gin.Context) {
 		// get current user to add to userid field
 		user, err := users.CurrentUser(context)
 		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{
-				"success": false,
-				"message": "could not find user",
-			})
+			globalutils.HandleError("error fetching user", err, context)
 			return
 		} else if user.Firstname == "" {
 			globalutils.HandleSuccess("user not found", user, context)
+		} else if !user.IsApproved {
+			globalutils.UnAuthorized(context)
 		} else {
 
 			// check if category exists
 			categoryExists, err := category.FetchSingleCategory(productInput.Category)
 			if err != nil {
-				response := models.Reply{
-					Message: "error validating the category",
-					Error:   err.Error(),
-					Success: false,
-				}
-				context.JSON(http.StatusBadRequest, response)
+				globalutils.HandleError("error validating category", errors.New("error validating category"), context)
 				return
 			}
 			subCategoryExists, err := subcategory.FetchSingleSubCategory(productInput.SubCategory)
 			if err != nil {
-				response := models.Reply{
-					Message: "error validating the sub category",
-					Error:   err.Error(),
-					Success: false,
-				}
-				context.JSON(http.StatusBadRequest, response)
+				globalutils.HandleError("error validating sub category", errors.New("error validating sub category"), context)
 				return
 			}
 
 			if categoryExists.CategoryName == "" {
-				response := models.Reply{
-					Message: "category not found",
-					Success: false,
-				}
-				context.JSON(http.StatusBadRequest, response)
+				globalutils.HandleError("category not found", errors.New("category not found"), context)
 				return
 			} else if subCategoryExists.SubCategoryName == "" {
-				response := models.Reply{
-					Message: "sub category not found",
-					Success: false,
-				}
-				context.JSON(http.StatusBadRequest, response)
+
+				globalutils.HandleError("sub category not found", errors.New("sub category not found"), context)
 				return
 			} else {
 
@@ -109,6 +86,7 @@ func AddProduct(context *gin.Context) {
 					globalutils.HandleError("error uploading main image", err, context)
 					return
 				}
+
 				product := Product{
 					ProductID:          productuuid.String(),
 					ProductName:        productInput.ProductName,
@@ -129,6 +107,18 @@ func AddProduct(context *gin.Context) {
 					Category:           productInput.Category,
 					SubCategory:        productInput.SubCategory,
 				}
+				fmt.Printf("saving to db \n%v\n", product)
+				savedProduct, err := product.Save()
+
+				if err != nil {
+					// delete saved image
+					images.DeleteImageFromBucket("e-duka-images", strings.ReplaceAll(mainImagePath, "e-duka-images/", ""))
+
+					globalutils.HandleError("error saving the product", err, context)
+					return
+				}
+
+				fmt.Println("saving other images to s3")
 				imagesPath, err := images.UploadOtherImages(productInput.ProductImages, product.ProductName)
 				if err != nil {
 					globalutils.HandleError("error uploading product images", err, context)
@@ -154,20 +144,6 @@ func AddProduct(context *gin.Context) {
 					}
 				}
 
-				savedProduct, err := product.Save()
-
-				if err != nil {
-
-					// delete saved image
-					_, err := images.DeleteImageFromBucket("e-duka-images", strings.ReplaceAll(mainImagePath, "e-duka-images/", ""))
-					if err != nil {
-						globalutils.HandleError("erorr occured deleting the image file", err, context)
-						return
-					}
-
-					globalutils.HandleError("error saving the product", err, context)
-					return
-				}
 				imageString, err := images.DownloadImageFromBucket(mainImagePath)
 
 				if err != nil {
@@ -191,8 +167,9 @@ func GetAllProducts(context *gin.Context) {
 	var err error
 
 	products, err := Fetchproducts()
+	fmt.Printf("product\n%v", products)
 	if err != nil {
-		globalutils.HandleError("error fetching produts", err, context)
+		globalutils.HandleError("error fetching products", err, context)
 		return
 	} else {
 		globalutils.HandleSuccess("all products fetched", products, context)
@@ -236,7 +213,7 @@ func GetSingleProduct(context *gin.Context) {
 		productExist.MainImage = mainImage
 
 		// fetch user details of the product owner
-		currentuser, err := users.FindSellerById(string(productExist.UserID))
+		currentuser, err := users.FindUserById(string(productExist.UserID))
 		if err != nil {
 			globalutils.HandleError("error finding the seller", err, context)
 			return
@@ -261,29 +238,67 @@ func GetSingleProduct(context *gin.Context) {
 		return
 	}
 }
+func GetSingleAd(context *gin.Context) {
+
+	productid := context.Param("id")
+
+	// query := "product_id=" + productid
+	fmt.Printf("product id \n%s\n", productid)
+	productExist, err := FindSingleAd(productid)
+	if err != nil {
+		globalutils.HandleError("could not fetch single ad", err, context)
+		return
+	} else if productExist.ProductName != "" {
+		newId := strings.ReplaceAll(productid, "'", "")
+		productImages, err := images.GetSpecificProductImage(newId)
+		if err != nil {
+			globalutils.HandleError("could not download ad images", err, context)
+		}
+		mainImage, err := images.DownloadImageFromBucket(productExist.MainImage)
+		if err != nil {
+			globalutils.HandleError("could not download ad main image", err, context)
+		}
+		productExist.MainImage = mainImage
+
+		// fetch user details of the product owner
+		currentuser, err := users.FindUserById(string(productExist.UserID))
+		if err != nil {
+			globalutils.HandleError("error finding the seller", err, context)
+			return
+		}
+		sellerDetails := gin.H{
+			"seller_name":        currentuser.Firstname + " " + currentuser.Lastname,
+			"seller_email":       currentuser.Email,
+			"seller_phonenumber": currentuser.Phone,
+			"seller_location":    currentuser.Location,
+			"user_profile":       currentuser.UserImage,
+		}
+
+		productData := gin.H{
+			"productdata":    productExist,
+			"images":         productImages,
+			"seller_details": sellerDetails,
+		}
+		globalutils.HandleSuccess("fetched ad succesful", productData, context)
+		return
+	} else {
+		globalutils.HandleSuccess("fetch ad does not exist", productExist, context)
+		return
+	}
+}
 func UpdateProduct(context *gin.Context) {
 
 	var productUpdate AddProductInput
 	if err := context.ShouldBindJSON(&productUpdate); err != nil {
-		response := models.Reply{
-			Message: "could not bind the user data to the request needs",
-			Error:   err.Error(),
-			Success: false,
-			Data:    productUpdate,
-		}
-		context.JSON(http.StatusBadRequest, response)
+		globalutils.HandleError("could not bind the user data to the request needs", err, context)
 		return
 	}
 
 	success, err := ValidateProductInput(&productUpdate)
 
 	if err != nil {
-		response := models.Reply{
-			Message: "error validating user input",
-			Error:   err.Error(),
-			Success: false,
-		}
-		context.JSON(http.StatusBadRequest, response)
+
+		globalutils.HandleError("error validating user input", err, context)
 		return
 	} else if !success {
 		response := models.Reply{
@@ -295,40 +310,33 @@ func UpdateProduct(context *gin.Context) {
 	} else {
 		user, err := users.CurrentUser(context)
 		if err != nil {
-			response := models.Reply{
-				Message: "could not get current user!!user required in order to update product",
-				Error:   err.Error(),
-				Success: false,
-			}
-			context.JSON(http.StatusBadRequest, response)
+
+			globalutils.HandleError("could not get current user!!user required in order to update product", err, context)
 			return
 		} else if user.Firstname == "" {
-			response := models.Reply{
-				Message: "no such user",
-				Success: false,
-			}
-			context.JSON(http.StatusBadRequest, response)
+			globalutils.UnAuthenticated(context)
 			return
 		} else {
 
 			productid := context.Query("id")
 			if productid != "" {
+
 				query := "product_id=" + productid
-				productExist, err := FindSingleProduct(query)
+				id := strings.ReplaceAll(productid, "'", "")
+
+				productExist, err := FindSingleProduct(id)
 				if err != nil {
-					response := models.Reply{
-						Message: "could not fetch the product",
-						Error:   err.Error(),
-						Success: false,
-					}
-					context.JSON(http.StatusBadRequest, response)
+					globalutils.HandleError("could not fetch product", err, context)
 					return
+				}
+				userOwnsProduct, err := ValidateUserOwnsProduct(user.UserID, productExist.UserID)
+				if err != nil {
+					globalutils.HandleError("error occurred while validating user", err, context)
+				} else if !userOwnsProduct {
+					globalutils.UnAuthorized(context)
 				} else if productExist.ProductName == "" {
-					response := models.Reply{
-						Message: "product does not exist",
-						Success: false,
-					}
-					context.JSON(http.StatusBadRequest, response)
+
+					globalutils.HandleError("product does not exist", errors.New("error fetching the product"), context)
 					return
 				} else {
 					newproduct := Product{
@@ -443,8 +451,10 @@ func DeactivateProduct(context *gin.Context) {
 	productid := context.Query("id")
 	query := "product_id=" + productid
 
+	id := strings.ReplaceAll(productid, "'", "")
+
 	// check if product exist
-	productExist, err := FindSingleProduct(query)
+	productExist, err := FindSingleProduct(id)
 	if err != nil {
 		globalutils.HandleError("error finding product", err, context)
 	} else if productExist.ProductName == "" {
@@ -452,7 +462,7 @@ func DeactivateProduct(context *gin.Context) {
 	} else if productExist.IsDeleted {
 		globalutils.HandleSuccess("product is deleted!!Please restore product first", productExist, context)
 	} else if !productExist.IsActive {
-		globalutils.HandleSuccess("product is not active active", productExist, context)
+		globalutils.HandleSuccess("product is not active", productExist, context)
 	} else {
 		success, err := DeactivateProductUtil(query)
 		if err != nil {
@@ -470,8 +480,10 @@ func DeleteProduct(context *gin.Context) {
 	productid := context.Query("id")
 	query := "product_id=" + productid
 
+	id := strings.ReplaceAll(productid, "'", "")
+
 	// check if product exist
-	productExist, err := FindSingleProduct(query)
+	productExist, err := FindSingleProduct(id)
 	if err != nil {
 		globalutils.HandleError("error finding product", err, context)
 	} else if productExist.ProductName == "" {
@@ -490,15 +502,16 @@ func DeleteProduct(context *gin.Context) {
 			globalutils.HandleSuccess("succesfully deleted the product", productExist, context)
 		}
 	}
-
 }
 
 func RestoreProduct(context *gin.Context) {
 	productid := context.Query("id")
 	query := "product_id=" + productid
 
+	id := strings.ReplaceAll(productid, "'", "")
+
 	// check if product exist
-	productExist, err := FindSingleProduct(query)
+	productExist, err := FindSingleProduct(id)
 	if err != nil {
 		globalutils.HandleError("error finding product", err, context)
 	} else if productExist.ProductName == "" {

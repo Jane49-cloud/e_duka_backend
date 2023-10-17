@@ -344,7 +344,7 @@ func TestAddproduct(t *testing.T) {
 	}
 
 	// valid data
-	validData := testCase{
+	invalidMainImage := testCase{
 		name: "should return true",
 		data: AddProductInput{
 			"productname",
@@ -358,12 +358,12 @@ func TestAddproduct(t *testing.T) {
 			"category",
 			"subcategory",
 		},
-		want: true,
+		want: false,
 	}
 
 	cases := []testCase{
 		emptyName,
-		validData,
+		invalidMainImage,
 		emptyName2,
 		invalidSpecialCharactersInProductName,
 		emptyDescription,
@@ -374,7 +374,6 @@ func TestAddproduct(t *testing.T) {
 		invalidSpecialCharactersInProductType,
 		emptyProductType2,
 		emptyProductType,
-		validData,
 		emptyBrandName,
 		emptyBrandName2,
 		invalidCharactersInBrand,
@@ -390,7 +389,7 @@ func TestAddproduct(t *testing.T) {
 		result, _ := ValidateProductInput(&item.data)
 
 		if result != item.want {
-			t.Errorf("test failed!! %s\n%v\n%v\n", item.name, item.data, result)
+			t.Errorf("test failed!!")
 		}
 	}
 	t.Logf("test passed")

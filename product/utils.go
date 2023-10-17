@@ -1,6 +1,7 @@
 package product
 
 import (
+	"encoding/base64"
 	"errors"
 	"regexp"
 	"strings"
@@ -19,6 +20,15 @@ func FindSingleProduct(query string) (Product, error) {
 	}
 	return product, nil
 }
+func FindSingleAd(query string) (Product, error) {
+	var product Product
+	err := database.Database.Where("is_deleted=?", false).Where("is_active=?", true).Where("is_suspended=?", false).Where("is_approved=?", true).Where("product_id=?", query).Find(&product).Error
+	if err != nil {
+		return Product{}, err
+
+	}
+	return product, nil
+}
 func Fetchproducts() ([]Product, error) {
 	var productList []Product
 
@@ -26,6 +36,7 @@ func Fetchproducts() ([]Product, error) {
 	if err != nil {
 		return []Product{}, err
 	}
+
 	if len(productList) > 0 {
 		for i, product := range productList {
 			mainImage, err := images.DownloadImageFromBucket(product.MainImage)
@@ -96,6 +107,11 @@ func ValidateProductInput(product *AddProductInput) (bool, error) {
 			value = strings.TrimSpace(value)
 			if value == "" {
 				return false, errors.New("product image cannot be empty")
+			}
+			// check if the base 64 is valid
+			_, err := base64.StdEncoding.DecodeString(product.MainImage)
+			if err != nil {
+				return false, errors.New("invalid base64 string")
 			}
 
 		} else if value == product.ProductType {
@@ -178,6 +194,19 @@ func RestoreProductUtil(query string) (bool, error) {
 	result := database.Database.Model(&updatedProduct).Where(query).Update("is_deleted", false)
 	if result.RowsAffected == 0 {
 		return false, errors.New("could not restore the current product")
+	}
+	return true, nil
+}
+
+func ValidateUserOwnsProduct(userId string, productUserId string) (bool, error) {
+	if userId == "" {
+		return false, errors.New("the user does not exist")
+	}
+	if productUserId == "" {
+		return false, errors.New("the product user does not exist")
+	}
+	if userId != productUserId {
+		return false, errors.New("the product does not belong to the user")
 	}
 	return true, nil
 }

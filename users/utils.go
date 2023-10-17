@@ -196,6 +196,15 @@ func UpdateUserUtil(query string, update User) (User, error) {
 	}
 	return updatedUser, nil
 }
+func UpdateUserSpecificField(query string, field string, value any) (User, error) {
+	var updatedUser User
+
+	result := database.Database.Model(&updatedUser).Where(query).Update(field, value)
+	if result.RowsAffected == 0 {
+		return User{}, errors.New("could not update")
+	}
+	return updatedUser, nil
+}
 
 func UploadUserImage(imageString string, username string) (string, error) {
 

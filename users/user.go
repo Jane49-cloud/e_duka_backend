@@ -26,6 +26,7 @@ type User struct {
 	InActiveAds     int    `gorm:"column:in_active_ads;default:0;" json:"inactiveads"`
 	DeletedAds      int    `gorm:"column:deleted_ads;default:0;" json:"deletedads"`
 	UserType        string `gorm:"column:user_type;not null;default:'visitor';" json:"usertype"`
+	IsApproved      bool   `gorm:"column:is_approved;type:bool;default:false;" json:"isapproved"`
 	TotalLikes      int    `gorm:"default:0;column:total_likes;" json:"totallikes"`
 	TotalViews      int    `gorm:"default:0;column:total_views;" json:"totalviews"`
 	DateJoined      string `gorm:"column:date_joined;" json:"datejoined"`

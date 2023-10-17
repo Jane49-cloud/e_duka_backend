@@ -1,7 +1,9 @@
 package users
 
 import (
+	"errors"
 	"net/http"
+	"strings"
 
 	"time"
 
@@ -197,21 +199,12 @@ func Login(context *gin.Context) {
 func GetSingleUser(context *gin.Context) {
 	user, err := CurrentUser(context)
 	if err != nil {
-		response := models.Reply{
-			Message: "error fetching current user",
-			Error:   err.Error(),
-			Success: false,
-		}
-		context.JSON(http.StatusBadRequest, response)
+
+		globalutils.HandleError("error fetching current user", err, context)
 		return
 	} else {
 		if user.Firstname == "" {
-			response := models.Reply{
-				Message: "user does not exist",
-				Error:   err.Error(),
-				Success: false,
-			}
-			context.JSON(http.StatusOK, response)
+			globalutils.HandleError("user does not exist", err, context)
 			return
 		} else {
 
@@ -227,13 +220,10 @@ func GetSingleUser(context *gin.Context) {
 				UserImage:  userImage,
 				Location:   user.Location,
 				UserID:     user.UserID,
+				IsApproved: user.IsApproved,
 			}
-			response := models.Reply{
-				Message: "Succesfully fetched the user",
-				Success: true,
-				Data:    userData,
-			}
-			context.JSON(http.StatusOK, response)
+
+			globalutils.HandleSuccess("Succesfully fetched the user", userData, context)
 			return
 		}
 	}
@@ -301,4 +291,26 @@ func UpdateUser(context *gin.Context) {
 		}
 	}
 
+}
+
+func ApproveUser(context *gin.Context) {
+	id := context.Query("id")
+
+	query := "user_id=" + id
+
+	userExists, err := FindUserById(strings.ReplaceAll(id, "'", ""))
+	if err != nil {
+		globalutils.HandleError("error finding user", err, context)
+		return
+	} else if userExists.Firstname == "" {
+		globalutils.HandleError("user does not exist", errors.New("user cannot be found"), context)
+		return
+	} else {
+		_, err := UpdateUserSpecificField(query, "is_approved", true)
+		if err != nil {
+			globalutils.HandleError("error updating user", err, context)
+			return
+		}
+		globalutils.HandleSuccess("succesfuly approved the user", User{}, context)
+	}
 }

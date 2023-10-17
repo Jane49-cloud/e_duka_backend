@@ -9,5 +9,6 @@ func AuthRoutes(router *gin.Engine) {
 		authRoutes.POST("/signin", Login)
 		authRoutes.GET("/getuser", JWTAuthMiddleWare(), GetSingleUser)
 		authRoutes.POST("/updateuser", JWTAuthMiddleWare(), UpdateUser)
+		authRoutes.POST("/approveuser", JWTAuthMiddleWare(), ApproveUser)
 	}
 }

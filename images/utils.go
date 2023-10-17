@@ -142,6 +142,9 @@ func DeleteImageFromBucket(bucketName string, objectKey string) (bool, error) {
 	}
 
 	_, err = svc.DeleteObject(input)
+	if err != nil {
+		return false, err
+	}
 
 	return true, nil
 }
