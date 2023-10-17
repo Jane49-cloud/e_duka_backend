@@ -228,7 +228,26 @@ func GetSingleUser(context *gin.Context) {
 		}
 	}
 }
+func FetchSingleUser(context *gin.Context) {
+	id := context.Query("id")
+	user, err := FindUserById(strings.ReplaceAll(id, "'", ""))
+	if err != nil {
+		globalutils.HandleError("error fetching user", err, context)
+		return
+	} else if user.Firstname == "" {
+		globalutils.HandleError("user does not exist", errors.New("user does not exist"), context)
+		return
+	} else {
+		userImage, err := images.DownloadImageFromBucket(user.UserImage)
+		if err != nil {
+			globalutils.HandleError("could not fetch the user image", err, context)
+		}
+		user.UserImage = userImage
+		globalutils.HandleSuccess("user feteched succesfully", user, context)
+		return
+	}
 
+}
 func UpdateUser(context *gin.Context) {
 
 	var userUpdateData User
