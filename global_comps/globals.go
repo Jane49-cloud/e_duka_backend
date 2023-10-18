@@ -55,6 +55,6 @@ func ServeApplication() {
 	mainad.Mainadsroutes(router)
 	admin.AdminRoutes(router)
 
-	router.Run("192.168.0.112:8000")
+	router.Run(":8000")
 	fmt.Println("Server running on port 8000")
 }

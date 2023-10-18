@@ -13,6 +13,7 @@ import (
 	"eleliafrika.com/backend/images"
 	"eleliafrika.com/backend/product"
 	"eleliafrika.com/backend/users"
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -186,4 +187,20 @@ func ValidateHashPassword(hashedPassword string, userPassword string) (bool, err
 		return false, err
 	}
 	return true, nil
+}
+
+func CurrentUser(context *gin.Context) (SystemAdmin, error) {
+	err := users.ValidateJWT(context)
+	if err != nil {
+		return SystemAdmin{}, err
+	}
+	token, _ := users.GetToken(context)
+	claims, _ := token.Claims.(jwt.MapClaims)
+	useremail := string(claims["email"].(string))
+
+	user, err := FindAdminByEmail(useremail)
+	if err != nil {
+		return SystemAdmin{}, err
+	}
+	return user, nil
 }

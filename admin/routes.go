@@ -14,6 +14,6 @@ func AdminRoutes(router *gin.Engine) {
 		authRoutes.POST("/approveuser", users.JWTAuthMiddleWare(), ApproveUser)
 		authRoutes.POST("/revokeuser", users.JWTAuthMiddleWare(), RevokeUser)
 		authRoutes.GET("/fetchusers", users.JWTAuthMiddleWare(), FetchSellers)
-		authRoutes.POST("/approve", users.JWTAuthMiddleWare(), ApproveProduct)
+		authRoutes.POST("/approveproduct", users.JWTAuthMiddleWare(), ApproveProduct)
 	}
 }
