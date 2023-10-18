@@ -140,11 +140,11 @@ func FetchAllUsersUtil() ([]users.User, error) {
 
 	return AllUsers, nil
 }
-func ApproveAd(query string) (bool, error) {
+func ApproveAd(id string) (bool, error) {
 	var updatedProduct product.Product
-	result := database.Database.Model(&updatedProduct).Where(query).Update("is_approved", true)
+	result := database.Database.Model(&updatedProduct).Where("product_id=?", id).Update("is_approved", true)
 	if result.RowsAffected == 0 {
-		return false, errors.New("could not deactivate the current product")
+		return false, errors.New("could not approve the current product")
 	}
 	return true, nil
 }

@@ -2,6 +2,7 @@ package admin
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -256,9 +257,9 @@ func ApproveProduct(context *gin.Context) {
 			globalutils.HandleSuccess("product is already approved", productExist, context)
 			return
 		} else {
-			query := "product_id=" + id
 
-			success, err := ApproveAd(query)
+			success, err := ApproveAd(id)
+			fmt.Printf("this is query \n%s\n", id)
 			if err != nil {
 				globalutils.HandleError("error approving  product", err, context)
 				return
