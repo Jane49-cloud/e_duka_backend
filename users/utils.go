@@ -222,3 +222,27 @@ func UploadUserImage(imageString string, username string) (string, error) {
 	}
 	return imagepath, nil
 }
+
+func FetchAllSellersUtil() ([]User, error) {
+	var AllUsers []User
+
+	err := database.Database.Where("is_approved=?", true).Find(&AllUsers).Error
+
+	if err != nil {
+		return []User{}, err
+	}
+
+	if len(AllUsers) > 0 {
+		for _, user := range AllUsers {
+			userImage, err := images.DownloadImageFromBucket(user.UserImage)
+			if err != nil {
+				return []User{}, err
+			} else if userImage == "" {
+				return []User{}, errors.New("image not downloaded")
+			}
+			user.UserImage = userImage
+		}
+	}
+
+	return AllUsers, nil
+}

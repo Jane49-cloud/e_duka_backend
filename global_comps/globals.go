@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"eleliafrika.com/backend/admin"
 	"eleliafrika.com/backend/brands"
 	"eleliafrika.com/backend/category"
 	"eleliafrika.com/backend/comments"
@@ -44,7 +45,7 @@ func ServeApplication() {
 	config.AllowHeaders = []string{"Content-Type", "x-access-token"}
 	router.Use(cors.New(config))
 
-	users.AuthRoutes(router)
+	users.UserRoutes(router)
 	product.ProductRoutes(router)
 	images.Imagesroutes(router)
 	comments.Commentroutes(router)
@@ -52,7 +53,8 @@ func ServeApplication() {
 	subcategory.SubCategoryRoutes(router)
 	brands.BrandRoutes(router)
 	mainad.Mainadsroutes(router)
+	admin.AdminRoutes(router)
 
-	router.Run(":8000")
+	router.Run("192.168.0.112:8000")
 	fmt.Println("Server running on port 8000")
 }
