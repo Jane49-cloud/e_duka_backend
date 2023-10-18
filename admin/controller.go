@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	globalutils "eleliafrika.com/backend/global_utils"
+	"eleliafrika.com/backend/product"
 	"eleliafrika.com/backend/users"
 	"github.com/gin-gonic/gin"
 )
@@ -67,4 +68,33 @@ func RevokeUser(context *gin.Context) {
 		}
 		globalutils.HandleSuccess("succesfuly revoked the user", users.User{}, context)
 	}
+}
+
+func ApproveProduct(context *gin.Context) {
+	productid := context.Query("id")
+	query := "product_id=" + productid
+
+	id := strings.ReplaceAll(productid, "'", "")
+
+	// check if product exist
+	productExist, err := product.FindSingleProduct(id)
+	if err != nil {
+		globalutils.HandleError("error finding product", err, context)
+	} else if productExist.ProductName == "" {
+		globalutils.HandleSuccess("the product does not exist", product.Product{}, context)
+	} else if productExist.IsDeleted {
+		globalutils.HandleSuccess("cannot approve a deleted product!!Please restore product first", productExist, context)
+	} else if productExist.IsApproved {
+		globalutils.HandleSuccess("product is already approved", productExist, context)
+	} else {
+		success, err := ApproveAd(query)
+		if err != nil {
+			globalutils.HandleError("error approvinging  product", err, context)
+		} else if !success {
+			globalutils.HandleError("failed in approving product", errors.New("could not approve product!!try again"), context)
+		} else {
+			globalutils.HandleSuccess("succesfully approved the product", productExist, context)
+		}
+	}
+
 }

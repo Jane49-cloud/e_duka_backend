@@ -20,7 +20,6 @@ func ProductRoutes(router *gin.Engine) {
 		authRoutes.POST("/deleteproduct", users.JWTAuthMiddleWare(), DeleteProduct)
 		authRoutes.POST("/restore", users.JWTAuthMiddleWare(), RestoreProduct)
 		authRoutes.POST("/activate", users.JWTAuthMiddleWare(), ActivateProduct)
-		authRoutes.POST("/approve", users.JWTAuthMiddleWare(), ApproveProduct)
 		authRoutes.POST("/deactivate", users.JWTAuthMiddleWare(), DeactivateProduct)
 	}
 }

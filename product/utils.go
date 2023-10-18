@@ -216,14 +216,7 @@ func DeactivateProductUtil(query string) (bool, error) {
 	}
 	return true, nil
 }
-func ApproveAd(query string) (bool, error) {
-	var updatedProduct Product
-	result := database.Database.Model(&updatedProduct).Where(query).Update("is_approved", true)
-	if result.RowsAffected == 0 {
-		return false, errors.New("could not deactivate the current product")
-	}
-	return true, nil
-}
+
 func DeleteProductUtil(query string) (bool, error) {
 	var updatedProduct Product
 	result := database.Database.Model(&updatedProduct).Where(query).Update("is_deleted", true)
