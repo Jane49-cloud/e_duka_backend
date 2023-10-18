@@ -17,6 +17,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var privateKey = []byte(os.Getenv("JWT_PRIVATE_KEY"))
@@ -245,4 +246,20 @@ func FetchAllSellersUtil() ([]User, error) {
 	}
 
 	return AllUsers, nil
+}
+func ValidateHashPassword(hashedPassword string, userPassword string) (bool, error) {
+	if userPassword == "" {
+		return false, bcrypt.ErrMismatchedHashAndPassword
+
+	}
+
+	if hashedPassword == "" {
+		return false, bcrypt.ErrHashTooShort
+
+	}
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(userPassword))
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }

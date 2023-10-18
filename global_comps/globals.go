@@ -22,7 +22,7 @@ import (
 func LoadDatabase() {
 	database.Connect()
 	// database.Database.AutoMigrate(&models.User{}, &models.Brand{}, &models.Category{}, &models.SubCategory{}, &models.Comment{}, &models.Product{})
-	// database.Database.AutoMigrate(&users.User{})
+	// database.Database.AutoMigrate(&admin.SystemAdmin{})
 }
 
 func LoadEnv() {

@@ -49,8 +49,8 @@ type RegisterInput struct {
 }
 
 type LoginInput struct {
-	Email    string `gorm:"size:255;not null;unique" json:"email"`
-	Password string `gorm:"size:255;not null;" json:"password"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 // function to create new user
@@ -71,6 +71,7 @@ func (user *User) BeforeSave(*gorm.DB) error {
 		return err
 
 	}
+
 	user.Password = string(hashPassword)
 	user.Firstname = html.EscapeString(strings.TrimSpace(user.Firstname))
 	user.Middlename = html.EscapeString(strings.TrimSpace(user.Middlename))
