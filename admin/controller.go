@@ -158,8 +158,8 @@ func FetchSellers(context *gin.Context) {
 
 func ApproveUser(context *gin.Context) {
 	id := context.Query("id")
-
-	query := "user_id=" + id
+	id = strings.ReplaceAll(id, "'", "")
+	// query := "user_id=" + strings.ReplaceAll(id, "'", "")
 
 	currentAdmin, err := CurrentUser(context)
 
@@ -171,7 +171,7 @@ func ApproveUser(context *gin.Context) {
 		return
 	} else {
 
-		userExists, err := users.FindUserById(strings.ReplaceAll(id, "'", ""))
+		userExists, err := users.FindUserById(id)
 		if err != nil {
 			globalutils.HandleError("error finding user", err, context)
 			return
@@ -182,19 +182,22 @@ func ApproveUser(context *gin.Context) {
 			globalutils.HandleSuccess("user is already approved", users.User{}, context)
 			return
 		} else {
-			_, err := users.UpdateUserSpecificField(query, "is_approved", true)
+
+			fmt.Printf("request id\n%v\n", id)
+			_, err := users.UpdateUserSpecificField(id, "is_approved", true)
 			if err != nil {
 				globalutils.HandleError("error approving user", err, context)
 				return
 			}
 			globalutils.HandleSuccess("succesfuly approved the user", users.User{}, context)
+			return
 		}
 	}
 }
 func RevokeUser(context *gin.Context) {
 	id := context.Query("id")
 
-	query := "user_id=" + id
+	id = strings.ReplaceAll(id, "'", "")
 
 	currentAdmin, err := CurrentUser(context)
 
@@ -217,7 +220,7 @@ func RevokeUser(context *gin.Context) {
 			globalutils.HandleSuccess("user is already revoked", users.User{}, context)
 			return
 		} else {
-			_, err := users.UpdateUserSpecificField(query, "is_approved", false)
+			_, err := users.UpdateUserSpecificField(id, "is_approved", false)
 			if err != nil {
 				globalutils.HandleError("error revoking user", err, context)
 				return
@@ -241,7 +244,6 @@ func ApproveProduct(context *gin.Context) {
 		globalutils.UnAuthorized(context)
 		return
 	} else {
-
 		// check if product exist
 		productExist, err := product.FindSingleProduct(id)
 		if err != nil {

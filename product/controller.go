@@ -53,8 +53,10 @@ func AddProduct(context *gin.Context) {
 			return
 		} else if user.Firstname == "" {
 			globalutils.HandleSuccess("user not found", user, context)
-		} else if !user.IsApproved {
-			globalutils.UnAuthorized(context)
+
+			// else if !user.IsApproved {
+			// 	globalutils.UnAuthorized(context)
+			// }
 		} else {
 
 			// check if category exists

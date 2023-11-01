@@ -131,8 +131,6 @@ func FetchAllUsersUtil() ([]users.User, error) {
 			userImage, err := images.DownloadImageFromBucket(user.UserImage)
 			if err != nil {
 				return []users.User{}, err
-			} else if userImage == "" {
-				return []users.User{}, errors.New("image not downloaded")
 			}
 			user.UserImage = userImage
 		}

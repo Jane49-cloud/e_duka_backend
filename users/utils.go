@@ -173,7 +173,6 @@ func ValidateLoginInput(user *LoginInput) (bool, error) {
 				return false, errors.New("invalid characters in email")
 			}
 		} else if value == user.Password {
-
 			if len(value) < 8 {
 				return false, errors.New("password is too short")
 			} else if !regexp.MustCompile(charPattern).MatchString(user.Password) {
@@ -191,16 +190,16 @@ func ValidateLoginInput(user *LoginInput) (bool, error) {
 func UpdateUserUtil(query string, update User) (User, error) {
 	var updatedUser User
 
-	result := database.Database.Model(&updatedUser).Where(query).Updates(update)
+	result := database.Database.Model(&updatedUser).Where("user_id=?", query).Updates(update)
 	if result.RowsAffected == 0 {
 		return User{}, errors.New("could not update the user")
 	}
 	return updatedUser, nil
 }
-func UpdateUserSpecificField(query string, field string, value any) (User, error) {
+func UpdateUserSpecificField(userId string, field string, value any) (User, error) {
 	var updatedUser User
 
-	result := database.Database.Model(&updatedUser).Where(query).Update(field, value)
+	result := database.Database.Model(&updatedUser).Where("user_id=?", userId).Update(field, value)
 	if result.RowsAffected == 0 {
 		return User{}, errors.New("could not update")
 	}

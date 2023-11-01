@@ -23,23 +23,21 @@ func Register(context *gin.Context) {
 	}
 	success, err := ValidateRegisterInput(&input)
 	if err != nil {
-		response := models.Reply{
-			Message: "Error validating user",
-			Error:   err.Error(),
-			Success: false,
-			Data:    input,
-		}
-		context.JSON(http.StatusBadRequest, response)
+
+		context.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "error validating user",
+			"token":   nil,
+		})
 		return
 	}
 	if !success {
-		response := models.Reply{
-			Message: "Error validating user",
-			Success: false,
-			Data:    input,
-			Error:   err.Error(),
-		}
-		context.JSON(http.StatusBadRequest, response)
+
+		context.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "error validating user",
+			"token":   nil,
+		})
 		return
 	}
 
@@ -84,15 +82,14 @@ func Register(context *gin.Context) {
 		})
 	} else {
 
-		savedUser, err := user.Save()
+		_, err := user.Save()
 		if err != nil {
-			response := models.Reply{
-				Message: "Error creating user",
-				Error:   err.Error(),
-				Success: false,
-				Data:    user,
-			}
-			context.JSON(http.StatusBadRequest, response)
+
+			context.JSON(http.StatusBadRequest, gin.H{
+				"success": false,
+				"message": "error creating user",
+				"token":   nil,
+			})
 			return
 		}
 		// generate token directly on succesfuly register
@@ -102,11 +99,11 @@ func Register(context *gin.Context) {
 			context.JSON(http.StatusBadRequest, gin.H{
 				"success": false,
 				"message": "could not generate token for the user",
+				"token":   nil,
 			})
 		}
 
 		context.JSON(http.StatusCreated, gin.H{
-			"user":    savedUser,
 			"success": true,
 			"message": "User has been created succesfully",
 			"token":   token,
@@ -131,22 +128,19 @@ func Login(context *gin.Context) {
 	// check validity of user input
 	success, err := ValidateLoginInput(&input)
 	if err != nil {
-		response := models.Reply{
-			Message: "Error validating user input",
-			Error:   err.Error(),
-			Success: false,
-			Data:    input,
-		}
-		context.JSON(http.StatusBadRequest, response)
+		context.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "error validating user input",
+			"token":   nil,
+		})
 		return
 	} else if !success {
-		response := models.Reply{
-			Message: "Error validating user",
-			Error:   err.Error(),
-			Success: false,
-			Data:    input,
-		}
-		context.JSON(http.StatusBadRequest, response)
+
+		context.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": "error validating user",
+			"token":   nil,
+		})
 		return
 	} else {
 
@@ -155,12 +149,12 @@ func Login(context *gin.Context) {
 		user, err := FindUserByEmail(input.Email)
 
 		if err != nil {
-			response := models.Reply{
-				Message: "Error fetching user",
-				Error:   err.Error(),
-				Success: false,
-			}
-			context.JSON(http.StatusBadRequest, response)
+
+			context.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "error fetching user",
+				"token":   nil,
+			})
 			return
 		}
 
@@ -168,11 +162,11 @@ func Login(context *gin.Context) {
 
 		err = user.ValidatePassword(input.Password)
 		if err != nil {
-			response := models.Reply{
-				Message: "incorrect password",
-				Success: false,
-				Error:   err.Error()}
-			context.JSON(http.StatusBadRequest, response)
+			context.JSON(http.StatusOK, gin.H{
+				"success": false,
+				"message": "incorrect details",
+				"token":   nil,
+			})
 			return
 		}
 
@@ -183,6 +177,7 @@ func Login(context *gin.Context) {
 			context.JSON(http.StatusBadRequest, gin.H{
 				"success": false,
 				"message": "Error occured while generating the token",
+				"token":   nil,
 			})
 			return
 
@@ -279,7 +274,8 @@ func UpdateUser(context *gin.Context) {
 		return
 	} else {
 		userid := context.Query("userid")
-		query := "user_id=" + userid
+
+		query := strings.ReplaceAll(userid, "'", "")
 		newUser := User{
 			Firstname:  userUpdateData.Firstname,
 			Middlename: userUpdateData.Middlename,
@@ -291,17 +287,12 @@ func UpdateUser(context *gin.Context) {
 		}
 		updateUser, err := UpdateUserUtil(query, newUser)
 		if err != nil {
-			response := models.Reply{
-				Message: "could not update user",
-				Success: false,
-				Error:   err.Error(),
-				Data:    newUser,
-			}
-			context.JSON(http.StatusBadRequest, response)
+
+			globalutils.HandleError("could not update user", err, context)
 			return
 		} else {
 			response := models.Reply{
-				Message: "user updated user",
+				Message: "user updated successfully",
 				Success: true,
 				Data:    updateUser,
 			}
