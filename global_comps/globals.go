@@ -11,7 +11,6 @@ import (
 	"eleliafrika.com/backend/database"
 	"eleliafrika.com/backend/images"
 	"eleliafrika.com/backend/mainad"
-	"eleliafrika.com/backend/models"
 	"eleliafrika.com/backend/product"
 	subcategory "eleliafrika.com/backend/subcategories"
 	"eleliafrika.com/backend/users"
@@ -22,7 +21,7 @@ import (
 
 func LoadDatabase() {
 	database.Connect()
-	database.Database.AutoMigrate(&admin.SystemAdmin{}, &users.User{}, &models.Brand{}, &models.Category{}, &models.SubCategory{}, &models.Comment{}, &product.Product{})
+	// database.Database.AutoMigrate(&admin.SystemAdmin{}, &users.User{}, &models.Brand{}, &models.Category{}, &models.SubCategory{}, &models.Comment{}, &product.Product{})
 }
 
 func LoadEnv() {
@@ -56,13 +55,14 @@ func ServeApplication() {
 	admin.AdminRoutes(router)
 
 	// Load the SSL certificate and key
-	certFile := "./server.crt" // Update this with the path to your certificate file
-	keyFile := "./server.key"  // Update this with the path to your private key file
+	// certFile := "./server.crt" // Update this with the path to your certificate file
+	// keyFile := "./server.key"  // Update this with the path to your private key file
 
 	// Run the server with TLS/HTTPS
-	if err := router.RunTLS(":8000", certFile, keyFile); err != nil {
+	if err := router.Run(":8000"); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
+	// .RunTLS("192.168.0.112:8000", certFile, keyFile);
 
 	fmt.Println("Server running on port 8000 (HTTPS)")
 }
