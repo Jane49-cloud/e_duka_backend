@@ -8,7 +8,6 @@ import (
 	"time"
 
 	globalutils "eleliafrika.com/backend/global_utils"
-	"eleliafrika.com/backend/images"
 	"eleliafrika.com/backend/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -239,6 +238,7 @@ func GetSingleUser(context *gin.Context) {
 				Location:   user.Location,
 				UserID:     user.UserID,
 				IsApproved: user.IsApproved,
+				Phone:      user.Phone,
 			}
 
 			response := models.Reply{
@@ -255,21 +255,39 @@ func FetchSingleUser(context *gin.Context) {
 	id := context.Query("id")
 	user, err := FindUserById(strings.ReplaceAll(id, "'", ""))
 	if err != nil {
-		globalutils.HandleError("error fetching user", err, context)
+		response := models.Reply{
+			Message: "error fetching user",
+			Error:   err.Error(),
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
 	} else if user.Firstname == "" {
-		globalutils.HandleError("user does not exist", errors.New("user does not exist"), context)
+		response := models.Reply{
+			Message: "user does not exist",
+			Error:   errors.New("could not find user").Error(),
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
 	} else {
-		userImage, err := images.DownloadImageFromBucket(user.UserImage)
 		if err != nil {
-			globalutils.HandleError("could not fetch the user image", err, context)
+			response := models.Reply{
+				Message: "could not fetch the user image",
+				Error:   err.Error(),
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
 		}
-		user.UserImage = userImage
-		globalutils.HandleSuccess("user feteched succesfully", user, context)
+		response := models.Reply{
+			Message: "user fetched succesfully",
+			Data:    user,
+			Success: true,
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
-
 }
 func UpdateUser(context *gin.Context) {
 
@@ -315,8 +333,12 @@ func UpdateUser(context *gin.Context) {
 		}
 		updateUser, err := UpdateUserUtil(query, newUser)
 		if err != nil {
-
-			globalutils.HandleError("could not update user", err, context)
+			response := models.Reply{
+				Message: "could not update user",
+				Success: false,
+				Error:   err.Error(),
+			}
+			context.JSON(http.StatusOK, response)
 			return
 		} else {
 			response := models.Reply{
@@ -328,7 +350,6 @@ func UpdateUser(context *gin.Context) {
 			return
 		}
 	}
-
 }
 func FetchSellers(context *gin.Context) {
 	users, err := FetchAllSellersUtil()
