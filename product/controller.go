@@ -20,7 +20,12 @@ func AddProduct(context *gin.Context) {
 	var productInput AddProductInput
 
 	if err := context.ShouldBind(&productInput); err != nil {
-		globalutils.HandleError("could not bind data from the user", err, context)
+		response := models.Reply{
+			Message: "could not bind data from the user",
+			Success: false,
+			Error:   err.Error(),
+		}
+		context.JSON(http.StatusOK, response)
 		return
 	}
 
@@ -49,10 +54,21 @@ func AddProduct(context *gin.Context) {
 		// get current user to add to userid field
 		user, err := users.CurrentUser(context)
 		if err != nil {
-			globalutils.HandleError("error fetching user", err, context)
+			response := models.Reply{
+				Message: "error fetching user",
+				Success: false,
+				Error:   err.Error(),
+			}
+			context.JSON(http.StatusBadRequest, response)
 			return
 		} else if user.Firstname == "" {
-			globalutils.HandleSuccess("user not found", user, context)
+			response := models.Reply{
+				Message: "user not found",
+				Success: false,
+				Error:   err.Error(),
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
 
 			// else if !user.IsApproved {
 			// 	globalutils.UnAuthorized(context)
@@ -62,39 +78,49 @@ func AddProduct(context *gin.Context) {
 			// check if category exists
 			categoryExists, err := category.FetchSingleCategory(productInput.Category)
 			if err != nil {
-				globalutils.HandleError("error validating category", errors.New("error validating category"), context)
+				response := models.Reply{
+					Message: "error validating category",
+					Success: false,
+					Error:   errors.New("error validating category").Error(),
+				}
+				context.JSON(http.StatusBadRequest, response)
 				return
 			}
 			subCategoryExists, err := subcategory.FetchSingleSubCategory(productInput.SubCategory)
 			if err != nil {
-				globalutils.HandleError("error validating sub category", errors.New("error validating sub category"), context)
+				response := models.Reply{
+					Message: "error validating sub category",
+					Success: false,
+					Error:   errors.New("error validating sub category").Error(),
+				}
+				context.JSON(http.StatusBadRequest, response)
 				return
 			}
 
 			if categoryExists.CategoryName == "" {
-				globalutils.HandleError("category not found", errors.New("category not found"), context)
+				response := models.Reply{
+					Message: "category not found",
+					Success: false,
+					Error:   errors.New("category not found").Error(),
+				}
+				context.JSON(http.StatusBadRequest, response)
 				return
 			} else if subCategoryExists.SubCategoryName == "" {
-
-				globalutils.HandleError("sub category not found", errors.New("sub category not found"), context)
+				response := models.Reply{
+					Message: "sub category not found",
+					Success: false,
+					Error:   errors.New("sub category not found").Error(),
+				}
+				context.JSON(http.StatusBadRequest, response)
 				return
 			} else {
-
-				// handle image input
-				mainImagePath, err := images.UploadMainimage(productInput.MainImage, productInput.ProductName)
-
-				if err != nil {
-					globalutils.HandleError("error uploading main image", err, context)
-					return
-				}
-
 				product := Product{
 					ProductID:          productuuid.String(),
 					ProductName:        productInput.ProductName,
 					ProductPrice:       productInput.ProductPrice,
 					ProductDescription: productInput.ProductDescription,
 					UserID:             user.UserID,
-					MainImage:          mainImagePath,
+					MainImage:          productInput.MainImage,
 					Quantity:           productInput.Quantity,
 					ProductType:        productInput.ProductType,
 					TotalLikes:         0,
@@ -112,19 +138,15 @@ func AddProduct(context *gin.Context) {
 				savedProduct, err := product.Save()
 
 				if err != nil {
-					// delete saved image
-					images.DeleteImageFromBucket("e-duka-images", strings.ReplaceAll(mainImagePath, "e-duka-images/", ""))
-
-					globalutils.HandleError("error saving the product", err, context)
-					return
-				}
-
-				imagesPath, err := images.UploadOtherImages(productInput.ProductImages, product.ProductName)
-				if err != nil {
-					globalutils.HandleError("error uploading product images", err, context)
+					response := models.Reply{
+						Message: "error uploading product images",
+						Success: false,
+						Error:   err.Error(),
+					}
+					context.JSON(http.StatusBadRequest, response)
 					return
 				} else {
-					for _, i := range imagesPath {
+					for _, i := range productInput.ProductImages {
 
 						imageuuid := uuid.New()
 						image := models.ProductImage{
@@ -132,33 +154,26 @@ func AddProduct(context *gin.Context) {
 							ProductID: productuuid.String(),
 							ImageUrl:  i,
 						}
-						savedImage, err := image.Save()
+						_, err := image.Save()
 						if err != nil {
-							context.JSON(http.StatusBadRequest, gin.H{
-								"error with saving image": err.Error(),
-								"success":                 false,
-								"image":                   savedImage,
-							})
+							response := models.Reply{
+								Message: "error with saving image",
+								Success: false,
+								Error:   err.Error(),
+							}
+							context.JSON(http.StatusBadRequest, response)
 							return
 						}
 					}
 				}
 
-				imageString, err := images.DownloadImageFromBucket(mainImagePath)
-
-				if err != nil {
-					context.JSON(http.StatusBadRequest, gin.H{
-						"error with downloading image": err.Error(),
-						"success":                      false,
-					})
-					return
+				response := models.Reply{
+					Message: "product has been added succesfully",
+					Success: true,
+					Data:    savedProduct,
 				}
-				savedProduct.MainImage = imageString
-				context.JSON(http.StatusCreated, gin.H{
-					"data":    savedProduct,
-					"success": true,
-					"message": "product has been added succesfully",
-				})
+				context.JSON(http.StatusCreated, response)
+				return
 			}
 		}
 	}
