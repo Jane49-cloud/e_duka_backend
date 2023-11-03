@@ -18,7 +18,7 @@ type User struct {
 	Email           string `gorm:"size:255;not null;unique" json:"email"`
 	Phone           string `gorm:"size:255;not null;unique" json:"phone"`
 	Password        string `gorm:"size:255;not null;" json:"password"`
-	UserImage       string `gorm:"size:255;" json:"userimage"`
+	UserImage       string `gorm:"type:text;size:65535;" json:"userimage"`
 	Location        string `gorm:"column:location;size:255;not null" json:"location"`
 	NoOfProducts    int    `gorm:"default:0;column:total_products;default:0" json:"noofproducts"`
 	PackageType     string `gorm:"column:package_type;not null;default:'basic';" json:"packagetype"`

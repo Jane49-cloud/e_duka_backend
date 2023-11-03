@@ -18,26 +18,34 @@ func Register(context *gin.Context) {
 	var input RegisterInput
 
 	if err := context.ShouldBindJSON(&input); err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response := models.Reply{
+			Error:   err.Error(),
+			Message: "error binding data",
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 	success, err := ValidateRegisterInput(&input)
 	if err != nil {
 
-		context.JSON(http.StatusOK, gin.H{
-			"success": false,
-			"message": "error validating user",
-			"token":   nil,
-		})
+		response := models.Reply{
+			Error:   err.Error(),
+			Message: "error validating data",
+			Success: false,
+		}
+		context.JSON(http.StatusOK, response)
 		return
 	}
 	if !success {
 
-		context.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"message": "error validating user",
-			"token":   nil,
-		})
+		response := models.Reply{
+			Error:   errors.New("returned false").Error(),
+			Message: "error validating data",
+			Success: false,
+		}
+
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
@@ -46,13 +54,6 @@ func Register(context *gin.Context) {
 	currentTime := time.Now()
 	formattedTime := currentTime.Format("2006-01-02 15:04:05")
 
-	userImagepath, err := UploadUserImage(input.UserImage, input.Firstname+"-"+input.Lastname)
-
-	if err != nil {
-		globalutils.HandleError("error uploading user image", err, context)
-		return
-	}
-
 	user := User{
 		UserID:          randomuuid.String(),
 		Firstname:       input.Firstname,
@@ -60,7 +61,7 @@ func Register(context *gin.Context) {
 		Lastname:        input.Lastname,
 		Location:        input.UserLocation,
 		Email:           input.Email,
-		UserImage:       userImagepath,
+		UserImage:       input.UserImage,
 		Phone:           input.Phone,
 		Password:        input.Password,
 		DateJoined:      formattedTime,
@@ -71,43 +72,58 @@ func Register(context *gin.Context) {
 	userExists, err := FindUserByEmail(user.Email)
 
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"error":   err.Error(),
-		})
+
+		response := models.Reply{
+			Error:   err.Error(),
+			Message: "error fetching user data",
+			Success: false,
+		}
+
+		context.JSON(http.StatusBadRequest, response)
+		return
 	} else if userExists.Email != "" {
-		context.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"message": "email has already been used",
-		})
+
+		response := models.Reply{
+			Error:   errors.New("user does exist").Error(),
+			Message: "email has already been used",
+			Success: false,
+		}
+
+		context.JSON(http.StatusBadRequest, response)
+		return
 	} else {
 
 		_, err := user.Save()
 		if err != nil {
 
-			context.JSON(http.StatusBadRequest, gin.H{
-				"success": false,
-				"message": "error creating user",
-				"token":   nil,
-			})
+			response := models.Reply{
+				Error:   err.Error(),
+				Message: "error creating user",
+				Success: false,
+			}
+
+			context.JSON(http.StatusBadRequest, response)
 			return
 		}
 		// generate token directly on succesfuly register
 		token, err := GenerateJWT(user)
 
 		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{
-				"success": false,
-				"message": "could not generate token for the user",
-				"token":   nil,
-			})
+			response := models.Reply{
+				Message: "could not generate token for the user",
+				Success: false,
+				Data:    token,
+				Error:   err.Error(),
+			}
+			context.JSON(http.StatusBadRequest, response)
 		}
 
-		context.JSON(http.StatusCreated, gin.H{
-			"success": true,
-			"message": "User has been created succesfully",
-			"token":   token,
-		})
+		response := models.Reply{
+			Message: "User has been created succesfully",
+			Success: true,
+			Data:    token,
+		}
+		context.JSON(http.StatusCreated, response)
 	}
 
 }
@@ -128,66 +144,67 @@ func Login(context *gin.Context) {
 	// check validity of user input
 	success, err := ValidateLoginInput(&input)
 	if err != nil {
-		context.JSON(http.StatusOK, gin.H{
-			"success": false,
-			"message": "error validating user input",
-			"token":   nil,
-		})
+		response := models.Reply{
+			Message: "error validating user input",
+			Error:   err.Error(),
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
 	} else if !success {
 
-		context.JSON(http.StatusOK, gin.H{
-			"success": false,
-			"message": "error validating user",
-			"token":   nil,
-		})
+		response := models.Reply{
+			Message: "could not validate date",
+			Error:   errors.New("validation returned false").Error(),
+			Success: false,
+		}
+
+		context.JSON(http.StatusBadRequest, response)
 		return
 	} else {
-
 		// check if user exists
-
 		user, err := FindUserByEmail(input.Email)
 
 		if err != nil {
-
-			context.JSON(http.StatusOK, gin.H{
-				"success": false,
-				"message": "error fetching user",
-				"token":   nil,
-			})
+			response := models.Reply{
+				Message: "error fetching user",
+				Error:   err.Error(),
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
 			return
 		}
-
 		// validate the password password passed with the harsh on db
-
 		err = user.ValidatePassword(input.Password)
 		if err != nil {
-			context.JSON(http.StatusOK, gin.H{
-				"success": false,
-				"message": "incorrect details",
-				"token":   nil,
-			})
+			response := models.Reply{
+				Message: "incorrect details",
+				Error:   err.Error(),
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
 			return
 		}
-
 		// generate jwt if error does not exists
 		token, err := GenerateJWT(user)
 
 		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{
-				"success": false,
-				"message": "Error occured while generating the token",
-				"token":   nil,
-			})
+			response := models.Reply{
+				Message: "error occured on authentication",
+				Error:   err.Error(),
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
 			return
 
 		}
 
-		context.JSON(http.StatusOK, gin.H{
-			"success": true,
-			"message": "Authentication successful",
-			"token":   token,
-		})
+		response := models.Reply{
+			Message: "Authentication successful",
+			Data:    token,
+			Success: true,
+		}
+		context.JSON(http.StatusOK, response)
 	}
 }
 
@@ -195,30 +212,41 @@ func GetSingleUser(context *gin.Context) {
 	user, err := CurrentUser(context)
 	if err != nil {
 
-		globalutils.HandleError("error fetching current user", err, context)
+		response := models.Reply{
+			Message: "error fetching current user",
+			Error:   err.Error(),
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
 	} else {
 		if user.Firstname == "" {
-			globalutils.HandleError("user does not exist", err, context)
+
+			response := models.Reply{
+				Message: "user does not exist",
+				Error:   errors.New("error user does not exist").Error(),
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
 			return
 		} else {
-
-			userImage, err := images.DownloadImageFromBucket(user.UserImage)
-			if err != nil {
-				globalutils.HandleError("could not fetch the user image", err, context)
-			}
 			userData := User{
 				Firstname:  user.Firstname,
 				Middlename: user.Middlename,
 				Lastname:   user.Lastname,
 				Email:      user.Email,
-				UserImage:  userImage,
+				UserImage:  user.UserImage,
 				Location:   user.Location,
 				UserID:     user.UserID,
 				IsApproved: user.IsApproved,
 			}
 
-			globalutils.HandleSuccess("Succesfully fetched the user", userData, context)
+			response := models.Reply{
+				Message: "Succesfully fetched the user",
+				Data:    userData,
+				Success: true,
+			}
+			context.JSON(http.StatusOK, response)
 			return
 		}
 	}
