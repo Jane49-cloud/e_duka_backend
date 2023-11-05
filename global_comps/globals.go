@@ -56,15 +56,14 @@ func ServeApplication() {
 	admin.AdminRoutes(router)
 
 	// Load the SSL certificate and key
-	 certFile := "../fullchain.pem" // Update this with the path to your certificate file
-	 keyFile := "../privkey.pem"  // Update this with the path to your private key file
+	certFile := "./fullchain.pem" // Update this with the path to your certificate file
+	keyFile := "./privkey.pem"    // Update this with the path to your private key file
 
 	// Run the server with TLS/HTTPS
-//	if err := router.Run(":8000");
-		if err := router.RunTLS(":8000", certFile, keyFile); err != nil {
+	//	if err := router.Run(":8000");
+	if err := router.RunTLS("192.0.0.105:8000", certFile, keyFile); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
-	// .RunTLS("192.168.0.112:8000", certFile, keyFile);
 
 	fmt.Println("Server running on port 8000 (HTTPS)")
 }
