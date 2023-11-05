@@ -8,7 +8,6 @@ import (
 	"unicode"
 
 	"eleliafrika.com/backend/database"
-	"eleliafrika.com/backend/images"
 )
 
 func FindSingleProduct(query string) (Product, error) {
@@ -36,19 +35,6 @@ func Fetchproducts() ([]Product, error) {
 	if err != nil {
 		return []Product{}, err
 	}
-
-	if len(productList) > 0 {
-		for i, product := range productList {
-			mainImage, err := images.DownloadImageFromBucket(product.MainImage)
-			if err != nil {
-				return productList, err
-			} else if product.MainImage == "" {
-				return productList, errors.New("could not download image from the storage")
-			}
-
-			productList[i].MainImage = mainImage
-		}
-	}
 	return productList, nil
 }
 
@@ -58,19 +44,6 @@ func FetchSingleUserProductsUtil(userid string) ([]Product, error) {
 	err := database.Database.Where("user_id=?", userid).Find(&productList).Error
 	if err != nil {
 		return []Product{}, err
-	}
-
-	if len(productList) > 0 {
-		for i, product := range productList {
-			mainImage, err := images.DownloadImageFromBucket(product.MainImage)
-			if err != nil {
-				return productList, err
-			} else if product.MainImage == "" {
-				return productList, errors.New("could not download image from the storage")
-			}
-
-			productList[i].MainImage = mainImage
-		}
 	}
 	return productList, nil
 }
@@ -82,18 +55,7 @@ func FetchAds() ([]Product, error) {
 	if err != nil {
 		return []Product{}, err
 	}
-	if len(productList) > 0 {
-		for i, product := range productList {
-			mainImage, err := images.DownloadImageFromBucket(product.MainImage)
-			if err != nil {
-				return productList, err
-			} else if product.MainImage == "" {
-				return productList, errors.New("could not download image from the storage")
-			}
 
-			productList[i].MainImage = mainImage
-		}
-	}
 	return productList, nil
 }
 func FetchSingleUserAdsUtil(userid string) ([]Product, error) {
@@ -102,18 +64,6 @@ func FetchSingleUserAdsUtil(userid string) ([]Product, error) {
 	err := database.Database.Where("user_id=?", userid).Where("is_deleted=?", false).Where("is_approved=?", true).Where("is_active=?", true).Where("is_suspended=?", false).Find(&productList).Error
 	if err != nil {
 		return []Product{}, err
-	}
-	if len(productList) > 0 {
-		for i, product := range productList {
-			mainImage, err := images.DownloadImageFromBucket(product.MainImage)
-			if err != nil {
-				return productList, err
-			} else if product.MainImage == "" {
-				return productList, errors.New("could not download image from the storage")
-			}
-
-			productList[i].MainImage = mainImage
-		}
 	}
 	return productList, nil
 }

@@ -11,7 +11,6 @@ import (
 	"eleliafrika.com/backend/database"
 	"eleliafrika.com/backend/images"
 	"eleliafrika.com/backend/mainad"
-	"eleliafrika.com/backend/models"
 	"eleliafrika.com/backend/product"
 	subcategory "eleliafrika.com/backend/subcategories"
 	"eleliafrika.com/backend/users"
@@ -23,7 +22,7 @@ import (
 func LoadDatabase() {
 	database.Connect()
 	// database.Database.AutoMigrate(&admin.SystemAdmin{}, &users.User{}, &models.Brand{}, &models.Category{}, &models.SubCategory{}, &models.Comment{}, &product.Product{})
-	database.Database.AutoMigrate(&models.ProductImage{}, &product.Product{})
+	// database.Database.AutoMigrate(&models.ProductImage{}, &product.Product{})
 }
 
 func LoadEnv() {
@@ -61,7 +60,7 @@ func ServeApplication() {
 	// keyFile := "./server.key"  // Update this with the path to your private key file
 
 	// Run the server with TLS/HTTPS
-	if err := router.Run("192.168.0.112:8000"); err != nil {
+	if err := router.Run("192.0.0.105:8000"); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 	// .RunTLS("192.168.0.112:8000", certFile, keyFile);

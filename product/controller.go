@@ -182,10 +182,20 @@ func GetAllProducts(context *gin.Context) {
 
 	products, err := Fetchproducts()
 	if err != nil {
-		globalutils.HandleError("error fetching products", err, context)
+		response := models.Reply{
+			Message: "error fetching products",
+			Success: false,
+			Error:   err.Error(),
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
 	} else {
-		globalutils.HandleSuccess("all products fetched", products, context)
+		response := models.Reply{
+			Message: "all products fetched",
+			Success: true,
+			Data:    products,
+		}
+		context.JSON(http.StatusOK, response)
 		return
 	}
 
@@ -195,10 +205,20 @@ func GetAllAds(context *gin.Context) {
 
 	products, err := FetchAds()
 	if err != nil {
-		globalutils.HandleError("error fetching ads", err, context)
+		response := models.Reply{
+			Message: "error fetching ads",
+			Success: false,
+			Error:   err.Error(),
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
 	} else {
-		globalutils.HandleSuccess("all ads fetched", products, context)
+		response := models.Reply{
+			Message: "all ads fetched",
+			Success: true,
+			Data:    products,
+		}
+		context.JSON(http.StatusOK, response)
 		return
 	}
 
@@ -207,11 +227,14 @@ func GetSingleProduct(context *gin.Context) {
 
 	productid := context.Param("id")
 
-	// query := "product_id=" + productid
-
 	productExist, err := FindSingleProduct(productid)
 	if err != nil {
-		globalutils.HandleError("could not fetch single product", err, context)
+		response := models.Reply{
+			Message: "could not fetch single product",
+			Success: false,
+			Error:   err.Error(),
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
 	} else if productExist.ProductName != "" {
 		newId := strings.ReplaceAll(productid, "'", "")
@@ -518,10 +541,20 @@ func FetchSingleUserProducts(context *gin.Context) {
 	id := context.Query("id")
 	products, err := FetchSingleUserProductsUtil(strings.ReplaceAll(id, "'", ""))
 	if err != nil {
-		globalutils.HandleError("error fetching single user products", err, context)
+		response := models.Reply{
+			Message: "error fetching single user products",
+			Success: false,
+			Error:   err.Error(),
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
 	} else {
-		globalutils.HandleSuccess("single user products fetched", products, context)
+		response := models.Reply{
+			Message: "single user products fetched",
+			Success: true,
+			Data:    products,
+		}
+		context.JSON(http.StatusOK, response)
 		return
 	}
 }
