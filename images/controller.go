@@ -2,9 +2,10 @@ package images
 
 import (
 	"encoding/base64"
+	"net/http"
 	"strings"
 
-	globalutils "eleliafrika.com/backend/global_utils"
+	"eleliafrika.com/backend/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -13,11 +14,20 @@ func Getimages(context *gin.Context) {
 	productId := context.Param("id")
 	images, err := GetSpecificProductImage(productId)
 	if err != nil {
-		globalutils.HandleError("could not the images", err, context)
+		response := models.Reply{
+			Message: "could not get the images",
+			Success: false,
+			Error:   err.Error(),
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
-
-	globalutils.HandleSuccess("image fetched sucessfully", images, context)
+	response := models.Reply{
+		Message: "images fetched succesfully",
+		Success: true,
+		Data:    images,
+	}
+	context.JSON(http.StatusOK, response)
 
 }
 

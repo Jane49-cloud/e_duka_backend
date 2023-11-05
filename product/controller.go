@@ -281,24 +281,35 @@ func GetSingleAd(context *gin.Context) {
 	// query := "product_id=" + productid
 	productExist, err := FindSingleAd(productid)
 	if err != nil {
-		globalutils.HandleError("could not fetch single ad", err, context)
+		response := models.Reply{
+			Message: "could not fetch single ad",
+			Success: false,
+			Error:   err.Error(),
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
 	} else if productExist.ProductName != "" {
-		newId := strings.ReplaceAll(productid, "'", "")
-		productImages, err := images.GetSpecificProductImage(newId)
-		if err != nil {
-			globalutils.HandleError("could not download ad images", err, context)
-		}
-		mainImage, err := images.DownloadImageFromBucket(productExist.MainImage)
-		if err != nil {
-			globalutils.HandleError("could not download ad main image", err, context)
-		}
-		productExist.MainImage = mainImage
 
 		// fetch user details of the product owner
 		currentuser, err := users.FindUserById(string(productExist.UserID))
 		if err != nil {
-			globalutils.HandleError("error finding the seller", err, context)
+			response := models.Reply{
+				Message: "error finding the seller",
+				Success: false,
+				Error:   err.Error(),
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
+		}
+
+		images, err := images.GetSpecificProductImage(productid)
+		if err != nil {
+			response := models.Reply{
+				Message: "could not get the images",
+				Success: false,
+				Error:   err.Error(),
+			}
+			context.JSON(http.StatusBadRequest, response)
 			return
 		}
 		sellerDetails := gin.H{
@@ -310,14 +321,34 @@ func GetSingleAd(context *gin.Context) {
 		}
 
 		productData := gin.H{
-			"productdata":    productExist,
-			"images":         productImages,
+			"product_data":   productExist,
 			"seller_details": sellerDetails,
+			"product_images": images,
 		}
-		globalutils.HandleSuccess("fetched ad succesful", productData, context)
+
+		if err != nil {
+			response := models.Reply{
+				Message: "could not get the images",
+				Success: false,
+				Error:   err.Error(),
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
+		}
+		response := models.Reply{
+			Message: "fetched single ad",
+			Success: true,
+			Data:    productData,
+		}
+		context.JSON(http.StatusOK, response)
 		return
 	} else {
-		globalutils.HandleSuccess("fetch ad does not exist", productExist, context)
+		response := models.Reply{
+			Message: "fetched ad does not exist",
+			Success: false,
+			Error:   errors.New("ad does not exist").Error(),
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 }

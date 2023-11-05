@@ -32,15 +32,9 @@ func GetSpecificProductImage(productid string) ([]string, error) {
 	if err != nil {
 		return []string{}, err
 	}
-
-	for _, i := range productsImages {
-		img, err := DownloadImageFromBucket(i.ImageUrl)
-		if err != nil {
-			return []string{}, err
-		}
-		images = append(images, img)
+	for image := range productsImages {
+		images = append(images, productsImages[image].ImageUrl)
 	}
-
 	return images, nil
 }
 
