@@ -198,7 +198,6 @@ func GetAllProducts(context *gin.Context) {
 		context.JSON(http.StatusOK, response)
 		return
 	}
-
 }
 func GetAllAds(context *gin.Context) {
 	var err error
@@ -213,15 +212,36 @@ func GetAllAds(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response)
 		return
 	} else {
+		var data []interface{}
+		for _, product := range products {
+
+			currentuser, err := users.FindUserById(string(product.UserID))
+			if err != nil {
+				response := models.Reply{
+					Error:   err.Error(),
+					Message: "error finding the seller",
+					Success: false,
+				}
+				context.JSON(http.StatusBadRequest, response)
+				return
+			} else {
+				productData := gin.H{
+					"product_data": product,
+					"user_name":    currentuser.Firstname + " " + currentuser.Middlename + " " + currentuser.Lastname,
+				}
+				data = append(data, productData)
+
+			}
+
+		}
 		response := models.Reply{
 			Message: "all ads fetched",
 			Success: true,
-			Data:    products,
+			Data:    data,
 		}
 		context.JSON(http.StatusOK, response)
 		return
 	}
-
 }
 func GetSingleProduct(context *gin.Context) {
 
@@ -240,18 +260,24 @@ func GetSingleProduct(context *gin.Context) {
 		newId := strings.ReplaceAll(productid, "'", "")
 		productImages, err := images.GetSpecificProductImage(newId)
 		if err != nil {
-			globalutils.HandleError("could not download product images", err, context)
-		}
-		mainImage, err := images.DownloadImageFromBucket(productExist.MainImage)
-		if err != nil {
-			globalutils.HandleError("could not download product main image", err, context)
-		}
-		productExist.MainImage = mainImage
+			response := models.Reply{
+				Error:   err.Error(),
+				Message: "could not download product images",
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
 
+		}
 		// fetch user details of the product owner
 		currentuser, err := users.FindUserById(string(productExist.UserID))
 		if err != nil {
-			globalutils.HandleError("error finding the seller", err, context)
+			response := models.Reply{
+				Error:   err.Error(),
+				Message: "error finding the seller",
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
 			return
 		}
 		sellerDetails := gin.H{
@@ -267,10 +293,20 @@ func GetSingleProduct(context *gin.Context) {
 			"images":         productImages,
 			"seller_details": sellerDetails,
 		}
-		globalutils.HandleSuccess("fetched product succesful", productData, context)
+		response := models.Reply{
+			Data:    productData,
+			Message: "fetched product succesful",
+			Success: true,
+		}
+		context.JSON(http.StatusOK, response)
 		return
 	} else {
-		globalutils.HandleSuccess("fetch product does not exist", productExist, context)
+		response := models.Reply{
+			Error:   err.Error(),
+			Message: "fetch product does not exist",
+			Success: true,
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 }
@@ -356,15 +392,24 @@ func UpdateProduct(context *gin.Context) {
 
 	var productUpdate AddProductInput
 	if err := context.ShouldBindJSON(&productUpdate); err != nil {
-		globalutils.HandleError("could not bind the user data to the request needs", err, context)
+		response := models.Reply{
+			Message: "could not bind the user data to the request needs",
+			Error:   err.Error(),
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
 	success, err := ValidateProductInput(&productUpdate)
 
 	if err != nil {
-
-		globalutils.HandleError("error validating user input", err, context)
+		response := models.Reply{
+			Message: "error validating user input",
+			Error:   err.Error(),
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
 	} else if !success {
 		response := models.Reply{
@@ -376,8 +421,12 @@ func UpdateProduct(context *gin.Context) {
 	} else {
 		user, err := users.CurrentUser(context)
 		if err != nil {
-
-			globalutils.HandleError("could not get current user!!user required in order to update product", err, context)
+			response := models.Reply{
+				Message: "could not get current user!!user required in order to update product",
+				Error:   err.Error(),
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
 			return
 		} else if user.Firstname == "" {
 			globalutils.UnAuthenticated(context)
@@ -392,17 +441,32 @@ func UpdateProduct(context *gin.Context) {
 
 				productExist, err := FindSingleProduct(id)
 				if err != nil {
-					globalutils.HandleError("could not fetch product", err, context)
+					response := models.Reply{
+						Error:   err.Error(),
+						Message: "could not fetch product",
+						Success: false,
+					}
+					context.JSON(http.StatusBadRequest, response)
 					return
 				}
 				userOwnsProduct, err := ValidateUserOwnsProduct(user.UserID, productExist.UserID)
 				if err != nil {
-					globalutils.HandleError("error occurred while validating user", err, context)
+					response := models.Reply{
+						Error:   err.Error(),
+						Message: "error occurred while validating user",
+						Success: false,
+					}
+					context.JSON(http.StatusBadRequest, response)
+					return
 				} else if !userOwnsProduct {
 					globalutils.UnAuthorized(context)
 				} else if productExist.ProductName == "" {
-
-					globalutils.HandleError("product does not exist", errors.New("error fetching the product"), context)
+					response := models.Reply{
+						Error:   errors.New("error fetching the product").Error(),
+						Message: "product does not exist",
+						Success: false,
+					}
+					context.JSON(http.StatusBadRequest, response)
 					return
 				} else {
 					newproduct := Product{
@@ -428,6 +492,7 @@ func UpdateProduct(context *gin.Context) {
 						return
 					} else if productUpdated.ProductName == "" {
 						response := models.Reply{
+							Error:   errors.New("could not update product").Error(),
 							Message: "could not update product",
 							Success: false,
 						}
@@ -454,7 +519,6 @@ func UpdateProduct(context *gin.Context) {
 		}
 	}
 }
-
 func ActivateProduct(context *gin.Context) {
 	productid := context.Query("id")
 	query := "product_id=" + productid
@@ -464,26 +528,71 @@ func ActivateProduct(context *gin.Context) {
 	// check if product exist
 	productExist, err := FindSingleProduct(id)
 	if err != nil {
-		globalutils.HandleError("error finding product", err, context)
+		response := models.Reply{
+			Error:   err.Error(),
+			Message: "error finding product",
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
+
 	} else if productExist.ProductName == "" {
-		globalutils.HandleSuccess("the product does not exist", Product{}, context)
+		response := models.Reply{
+			Error:   errors.New("product does not exist").Error(),
+			Message: "the product does not exist",
+			Success: false,
+		}
+		context.JSON(http.StatusOK, response)
+		return
+
 	} else if productExist.IsDeleted {
-		globalutils.HandleSuccess("cannot activate a deleted product!!Please restore product first", productExist, context)
+		response := models.Reply{
+			Error:   errors.New("product is deleted").Error(),
+			Message: "cannot activate a deleted product!!Please restore product first",
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
+
 	} else if productExist.IsActive {
-		globalutils.HandleSuccess("product is already active", productExist, context)
+		response := models.Reply{
+			Error:   err.Error(),
+			Message: "product is already active",
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
+
 	} else {
 		success, err := ActivateProductUtil(query)
 		if err != nil {
-			globalutils.HandleError("error activating  product", err, context)
+			response := models.Reply{
+				Error:   err.Error(),
+				Message: "product is already active",
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
 		} else if !success {
-			globalutils.HandleError("failed in activating product", errors.New("could not activate product!!try again"), context)
+			response := models.Reply{
+				Error:   errors.New("could not activate product").Error(),
+				Message: "failed in activating product",
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
 		} else {
-			globalutils.HandleSuccess("succesfully activated the product", productExist, context)
+			response := models.Reply{
+				Data:    productExist,
+				Message: "succesfully activated the product",
+				Success: true,
+			}
+			context.JSON(http.StatusOK, response)
+			return
+
 		}
 	}
-
 }
-
 func DeactivateProduct(context *gin.Context) {
 	productid := context.Query("id")
 	query := "product_id=" + productid
@@ -493,26 +602,70 @@ func DeactivateProduct(context *gin.Context) {
 	// check if product exist
 	productExist, err := FindSingleProduct(id)
 	if err != nil {
-		globalutils.HandleError("error finding product", err, context)
+		response := models.Reply{
+			Error:   err.Error(),
+			Message: "error finding product",
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
 	} else if productExist.ProductName == "" {
-		globalutils.HandleSuccess("the product does not exist", Product{}, context)
+		response := models.Reply{
+			Error:   errors.New("product does not exist").Error(),
+			Message: "the product does not exist",
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
+
 	} else if productExist.IsDeleted {
-		globalutils.HandleSuccess("product is deleted!!Please restore product first", productExist, context)
+		response := models.Reply{
+			Error:   errors.New("product deleted").Error(),
+			Message: "product is deleted!!Please restore product first",
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
+
 	} else if !productExist.IsActive {
-		globalutils.HandleSuccess("product is not active", productExist, context)
+		response := models.Reply{
+			Data:    productExist,
+			Message: "product is not active",
+			Success: true,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
 	} else {
 		success, err := DeactivateProductUtil(query)
 		if err != nil {
-			globalutils.HandleError("error deactivating  product", err, context)
+			response := models.Reply{
+				Error:   err.Error(),
+				Message: "error deactivating  product",
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
 		} else if !success {
-			globalutils.HandleError("failed in deactivating product", errors.New("could not deactivate product!!try again"), context)
+			response := models.Reply{
+				Error:   errors.New("could not deactivate product!!try again").Error(),
+				Message: "failed in deactivating product",
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
+
 		} else {
-			globalutils.HandleSuccess("succesfully deactivated the product", productExist, context)
+			response := models.Reply{
+				Data:    productExist,
+				Message: "succesfully deactivated the product",
+				Success: true,
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
+
 		}
 	}
-
 }
-
 func DeleteProduct(context *gin.Context) {
 	productid := context.Query("id")
 	query := "product_id=" + productid
@@ -522,25 +675,68 @@ func DeleteProduct(context *gin.Context) {
 	// check if product exist
 	productExist, err := FindSingleProduct(id)
 	if err != nil {
-		globalutils.HandleError("error finding product", err, context)
+		response := models.Reply{
+			Error:   err.Error(),
+			Message: "error finding product",
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
 	} else if productExist.ProductName == "" {
-		globalutils.HandleSuccess("the product does not exist", Product{}, context)
+		response := models.Reply{
+			Data:    Product{},
+			Message: "the product does not exist",
+			Success: true,
+		}
+		context.JSON(http.StatusOK, response)
+		return
 	} else if productExist.IsDeleted {
-		globalutils.HandleSuccess("product already deleted", productExist, context)
+		response := models.Reply{
+			Data:    productExist,
+			Message: "product already deleted",
+			Success: true,
+		}
+		context.JSON(http.StatusOK, response)
+		return
+
 	} else if productExist.IsActive {
-		globalutils.HandleSuccess("you cannot delete an active product!! Please deactivate the product first", productExist, context)
+		response := models.Reply{
+			Data:    productExist,
+			Message: "you cannot delete an active product!! Please deactivate the product first",
+			Success: true,
+		}
+		context.JSON(http.StatusOK, response)
+		return
 	} else {
 		success, err := DeleteProductUtil(query)
 		if err != nil {
-			globalutils.HandleError("error deleting  product", err, context)
+			response := models.Reply{
+				Error:   err.Error(),
+				Message: "error deleting  product",
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
+
 		} else if !success {
-			globalutils.HandleError("failed in deleting product", errors.New("could not delete product!!try again"), context)
+			response := models.Reply{
+				Error:   errors.New("could not delete product").Error(),
+				Message: "failed in deleting product",
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
 		} else {
-			globalutils.HandleSuccess("succesfully deleted the product", productExist, context)
+			response := models.Reply{
+				Data:    productExist,
+				Message: "succesfully deleted the product",
+				Success: true,
+			}
+			context.JSON(http.StatusOK, response)
+			return
 		}
 	}
 }
-
 func RestoreProduct(context *gin.Context) {
 	productid := context.Query("id")
 	query := "product_id=" + productid
@@ -550,24 +746,62 @@ func RestoreProduct(context *gin.Context) {
 	// check if product exist
 	productExist, err := FindSingleProduct(id)
 	if err != nil {
-		globalutils.HandleError("error finding product", err, context)
+		response := models.Reply{
+			Error:   err.Error(),
+			Message: "error finding product",
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
+
 	} else if productExist.ProductName == "" {
-		globalutils.HandleSuccess("the product does not exist", Product{}, context)
+		response := models.Reply{
+			Data:    Product{},
+			Message: "the product does not exist",
+			Success: true,
+		}
+		context.JSON(http.StatusOK, response)
+		return
 	} else if !productExist.IsDeleted {
-		globalutils.HandleSuccess("product is not deleted", productExist, context)
+		response := models.Reply{
+			Data:    productExist,
+			Message: "product is not deleted",
+			Success: true,
+		}
+		context.JSON(http.StatusOK, response)
+		return
+
 	} else {
 		success, err := RestoreProductUtil(query)
 		if err != nil {
-			globalutils.HandleError("error restoring  product", err, context)
+			response := models.Reply{
+				Error:   err.Error(),
+				Message: "error restoring  product",
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
 		} else if !success {
-			globalutils.HandleError("failed in restoring product", errors.New("could not restore product!!try again"), context)
+			response := models.Reply{
+				Error:   errors.New("could not restore product!!try again").Error(),
+				Message: "failed in restoring product",
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
 		} else {
-			globalutils.HandleSuccess("succesfully restoring the product", productExist, context)
+			response := models.Reply{
+				Data:    productExist,
+				Message: "succesfully restoring the product",
+				Success: true,
+			}
+			context.JSON(http.StatusOK, response)
+			return
+
 		}
+
 	}
-
 }
-
 func FetchSingleUserProducts(context *gin.Context) {
 	id := context.Query("id")
 	products, err := FetchSingleUserProductsUtil(strings.ReplaceAll(id, "'", ""))
@@ -589,16 +823,27 @@ func FetchSingleUserProducts(context *gin.Context) {
 		return
 	}
 }
-
 func FetchSingleUserAds(context *gin.Context) {
 	id := context.Query("id")
 
 	products, err := FetchSingleUserAdsUtil(strings.ReplaceAll(id, "'", ""))
 	if err != nil {
-		globalutils.HandleError("error fetching single user products", err, context)
+		response := models.Reply{
+			Error:   err.Error(),
+			Message: "error fetching single user products",
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
+
 	} else {
-		globalutils.HandleSuccess("single user products fetched", products, context)
+		response := models.Reply{
+			Data:    products,
+			Message: "single user products fetched",
+			Success: true,
+		}
+		context.JSON(http.StatusOK, response)
 		return
+
 	}
 }

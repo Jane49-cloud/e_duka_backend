@@ -7,7 +7,6 @@ import (
 
 	"time"
 
-	globalutils "eleliafrika.com/backend/global_utils"
 	"eleliafrika.com/backend/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -355,11 +354,20 @@ func FetchSellers(context *gin.Context) {
 	users, err := FetchAllSellersUtil()
 
 	if err != nil {
-		globalutils.HandleError("error fetching all users", err, context)
+		response := models.Reply{
+			Error:   err.Error(),
+			Message: "error fetching all users",
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
 	} else {
-
-		globalutils.HandleSuccess("succesfully fetched all users", users, context)
+		response := models.Reply{
+			Data:    users,
+			Message: "succesfully fetched all users",
+			Success: true,
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 }

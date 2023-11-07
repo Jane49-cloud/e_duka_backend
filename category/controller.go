@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 
-	globalutils "eleliafrika.com/backend/global_utils"
 	"eleliafrika.com/backend/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -50,7 +49,12 @@ func CreateCategory(context *gin.Context) {
 			context.JSON(http.StatusBadRequest, response)
 			return
 		} else if category.IsDeleted {
-			globalutils.HandleSuccess("category exists but is deleted. Reactivate the category", category, context)
+			response := models.Reply{
+				Data:    category,
+				Success: true,
+				Message: "category exists but is deleted. Reactivate the category",
+			}
+			context.JSON(http.StatusBadRequest, response)
 			return
 		} else if category.CategoryName != "" {
 
@@ -73,12 +77,20 @@ func CreateCategory(context *gin.Context) {
 			category, err := newProduct.Save()
 
 			if err != nil {
-
-				globalutils.HandleError("coud not create category", err, context)
+				response := models.Reply{
+					Message: "coud not create category",
+					Error:   err.Error(),
+					Success: false,
+				}
+				context.JSON(http.StatusBadRequest, response)
 				return
 			}
-
-			globalutils.HandleSuccess("category created!!", category, context)
+			response := models.Reply{
+				Message: "category created!!",
+				Data:    category,
+				Success: true,
+			}
+			context.JSON(http.StatusOK, response)
 			return
 		}
 
@@ -108,23 +120,49 @@ func DeleteCategory(context *gin.Context) {
 	categoryname := context.Param("name")
 	categoryExist, err := FetchSingleCategory(categoryname)
 	if err != nil {
-		globalutils.HandleError("error cheking validity of request", err, context)
+		response := models.Reply{
+			Message: "error cheking validity of request",
+			Error:   err.Error(),
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
+
 	} else if categoryExist.CategoryName == "" {
-		globalutils.HandleError("the category requested is missing", errors.New("category doe not exist"), context)
+		response := models.Reply{
+			Message: "the category requested is missing",
+			Error:   errors.New("category doe not exist").Error(),
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
 	} else if categoryExist.IsDeleted {
-		globalutils.HandleError("the category requested is already deleted!!please confirm the validity of the request", errors.New("category already exist but is deleted"), context)
+		response := models.Reply{
+			Message: "the category requested is already deleted!!please confirm the validity of the request",
+			Error:   errors.New("category already exist but is deleted").Error(),
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
 		return
 	} else {
 		deletedCategory, err := UpdateCategory(categoryname, models.Category{
 			IsDeleted: true,
 		})
 		if err != nil {
-			globalutils.HandleError("could not delete the product", err, context)
+			response := models.Reply{
+				Message: "could not delete the product",
+				Error:   err.Error(),
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
 			return
 		} else {
-			globalutils.HandleSuccess("delete operation succesful!!", deletedCategory, context)
+			response := models.Reply{
+				Message: "delete operation succesful!!",
+				Data:    deletedCategory,
+				Success: true,
+			}
+			context.JSON(http.StatusOK, response)
 			return
 		}
 	}

@@ -55,17 +55,10 @@ func ServeApplication() {
 	mainad.Mainadsroutes(router)
 	admin.AdminRoutes(router)
 
-	// Load the SSL certificate and k
-//	certFile := "/etc/letsencrypt/live/eleliafrika.com/fullchain.pem"
-  // 	keyFile := "/etc/letsencrypt/live/eleliafrika.com/privkey.pem"
-
-
 	certFile := "./fullchain.pem"
 	keyFile := "./privkey.pem"
 
-	// Run the server with TLS/HTTPS
-	//	if err := router.Run(":8000");
-	if err := router.RunTLS(":8000",certFile,keyFile); err != nil {
+	if err := router.RunTLS(":8000", certFile, keyFile); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 
