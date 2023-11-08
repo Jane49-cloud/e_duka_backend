@@ -1,7 +1,6 @@
 package users
 
 import (
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"net/http"
@@ -13,10 +12,8 @@ import (
 	"unicode"
 
 	"eleliafrika.com/backend/database"
-	"eleliafrika.com/backend/images"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -206,21 +203,20 @@ func UpdateUserSpecificField(userId string, field string, value any) (User, erro
 	return updatedUser, nil
 }
 
-func UploadUserImage(imageString string, username string) (string, error) {
+func UploadUserImage(imageString string, username string) {
 
-	imageuuid := uuid.New()
-	filename := strings.ReplaceAll(username, " ", "") + imageuuid.String()
+	// imageuuid := uuid.New()
+	// filename := strings.ReplaceAll(username, " ", "") + imageuuid.String()
 
-	imageBytes, err := base64.StdEncoding.DecodeString(imageString)
-	if err != nil {
-		return "", err
-	}
+	// imageBytes, err := base64.StdEncoding.DecodeString(imageString)
+	// if err != nil {
+	// 	return "", err
+	// }
 
-	imagepath, err := images.UploadImageToBucket(username, "user-images", imageBytes, filename)
-	if err != nil {
-		return "", nil
-	}
-	return imagepath, nil
+	// imagepath, err := images.UploadImageToBucket(username, "user-images", imageBytes, filename)
+	// if err != nil {
+	// 	return "", nil
+	// }
 }
 
 func FetchAllSellersUtil() ([]User, error) {
@@ -232,17 +228,17 @@ func FetchAllSellersUtil() ([]User, error) {
 		return []User{}, err
 	}
 
-	if len(AllUsers) > 0 {
-		for _, user := range AllUsers {
-			userImage, err := images.DownloadImageFromBucket(user.UserImage)
-			if err != nil {
-				return []User{}, err
-			} else if userImage == "" {
-				return []User{}, errors.New("image not downloaded")
-			}
-			user.UserImage = userImage
-		}
-	}
+	// if len(AllUsers) > 0 {
+	// 	for _, user := range AllUsers {
+	// 		userImage, err := images.DownloadImageFromBucket(user.UserImage)
+	// 		if err != nil {
+	// 			return []User{}, err
+	// 		} else if userImage == "" {
+	// 			return []User{}, errors.New("image not downloaded")
+	// 		}
+	// 		user.UserImage = userImage
+	// 	}
+	// }
 
 	return AllUsers, nil
 }

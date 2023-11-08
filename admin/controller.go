@@ -52,7 +52,7 @@ func Register(context *gin.Context) {
 	currentTime := time.Now()
 	formattedTime := currentTime.Format("2006-01-02 15:04:05")
 
-	userImagepath, err := users.UploadUserImage(input.AdminImage, input.AdminName)
+	// userImagepath, err := users.UploadUserImage(input.AdminImage, input.AdminName)
 
 	if err != nil {
 		response := models.Reply{
@@ -68,7 +68,7 @@ func Register(context *gin.Context) {
 		AdminID:      randomuuid.String(),
 		AdminName:    input.AdminName,
 		Email:        input.Email,
-		AdminImage:   userImagepath,
+		AdminImage:   input.AdminImage,
 		Cell:         input.Cell,
 		Password:     input.Password,
 		DateAdded:    formattedTime,

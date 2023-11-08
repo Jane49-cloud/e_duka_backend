@@ -114,13 +114,26 @@ func AddProduct(context *gin.Context) {
 				context.JSON(http.StatusBadRequest, response)
 				return
 			} else {
+
+				// save image to firebase store
+
+				url, err := images.UploadImageToFireBase(productInput.MainImage)
+				if err != nil {
+					response := models.Reply{
+						Message: "main image not saved",
+						Success: false,
+						Error:   err.Error(),
+					}
+					context.JSON(http.StatusBadRequest, response)
+					return
+				}
 				product := Product{
 					ProductID:          productuuid.String(),
 					ProductName:        productInput.ProductName,
 					ProductPrice:       productInput.ProductPrice,
 					ProductDescription: productInput.ProductDescription,
 					UserID:             user.UserID,
-					MainImage:          productInput.MainImage,
+					MainImage:          url,
 					Quantity:           productInput.Quantity,
 					ProductType:        productInput.ProductType,
 					TotalLikes:         0,

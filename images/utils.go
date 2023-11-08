@@ -1,18 +1,14 @@
 package images
 
 import (
-	"bytes"
+	"context"
 	"encoding/base64"
-	"io"
-	"net/http"
-	"os"
+	"log"
 
 	"eleliafrika.com/backend/database"
 	"eleliafrika.com/backend/models"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
+	firebase "firebase.google.com/go"
+	"google.golang.org/api/option"
 )
 
 func GetProductImages() ([]models.ProductImage, error) {
@@ -37,108 +33,55 @@ func GetSpecificProductImage(productid string) ([]string, error) {
 	}
 	return images, nil
 }
+func UploadImageToFireBase(imageString string) (string, error) {
+	config := &firebase.Config{
+		StorageBucket: "eduka-f19e5.appspot.com",
+	}
 
-func UploadImageToBucket(name string, imagefolder string, imageBytes []byte, imagename string) (string, error) {
+	opt := option.WithCredentialsFile("./key.json")
+	app, err := firebase.NewApp(context.Background(), config, opt)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
-	awsSecret := os.Getenv("SECRET_KEY")
-	awsAccessKey := os.Getenv("ACCESS_KEY")
-	token := os.Getenv("TOKEN")
+	client, err := app.Storage(context.Background())
+	if err != nil {
+		log.Fatalln(err)
+	}
 
-	creds := credentials.NewStaticCredentials(awsAccessKey, awsSecret, token)
-	cfg := aws.NewConfig().WithRegion("af-south-1").WithCredentials(creds)
+	bucket, err := client.DefaultBucket()
+	if err != nil {
+		log.Fatalln(err)
+	}
 
-	sess, err := session.NewSession(cfg)
+	decodedImage, err := base64.StdEncoding.DecodeString(imageString)
+
 	if err != nil {
 		return "", err
 	}
 
-	reader := bytes.NewReader(imageBytes)
+	// Generate a unique image name or use an existing one
+	imageName := "newimage.jpg"
 
-	fileSize := int64(len(imageBytes))
-	fileType := http.DetectContentType(imageBytes)
+	object := bucket.Object("images/" + imageName)
+	wc := object.NewWriter(context.Background())
+	wc.ContentType = "image/jpeg"
 
-	svc := s3.New(sess)
-	objectKey := "assets/productImages/" + name + "/" + imagefolder + "/" + imagename
-	storageLocation := "e-duka-images"
-
-	input := &s3.PutObjectInput{
-		Body:          reader,
-		Bucket:        aws.String(storageLocation),
-		Key:           aws.String(objectKey),
-		ContentType:   aws.String(fileType),
-		ContentLength: aws.Int64(fileSize),
-	}
-
-	_, err = svc.PutObject(input)
+	_, err = wc.Write(decodedImage)
 	if err != nil {
 		return "", err
 	}
 
-	return objectKey, nil
+	if err := wc.Close(); err != nil {
+		return "", err
+	}
 
-}
-func DownloadImageFromBucket(objectKey string) (string, error) {
-	awsSecret := os.Getenv("SECRET_KEY")
-	awsAccessKey := os.Getenv("ACCESS_KEY")
-	token := os.Getenv("TOKEN")
-
-	creds := credentials.NewStaticCredentials(awsAccessKey, awsSecret, token)
-	cfg := aws.NewConfig().WithRegion("af-south-1").WithCredentials(creds)
-
-	sess, err := session.NewSession(cfg)
+	// Get the download URL
+	downloadURL, err := object.Attrs(context.Background())
 	if err != nil {
 		return "", err
 	}
 
-	svc := s3.New(sess)
-	storageLocation := "e-duka-images"
-	input := &s3.GetObjectInput{
-		Bucket: aws.String(storageLocation),
-		Key:    aws.String(objectKey),
-	}
+	return downloadURL.MediaLink, nil
 
-	result, err := svc.GetObject(input)
-	if err != nil {
-		return "", err
-	}
-	defer result.Body.Close()
-
-	var imageBuffer bytes.Buffer
-
-	_, err = io.Copy(&imageBuffer, result.Body)
-
-	if err != nil {
-		return "", err
-	}
-	imageString := base64.StdEncoding.EncodeToString(imageBuffer.Bytes())
-
-	return imageString, nil
-}
-
-func DeleteImageFromBucket(bucketName string, objectKey string) (bool, error) {
-	awsSecret := os.Getenv("SECRET_KEY")
-	awsAccessKey := os.Getenv("ACCESS_KEY")
-	token := os.Getenv("TOKEN")
-
-	creds := credentials.NewStaticCredentials(awsAccessKey, awsSecret, token)
-	cfg := aws.NewConfig().WithRegion("af-south-1").WithCredentials(creds)
-
-	sess, err := session.NewSession(cfg)
-	if err != nil {
-		return false, err
-	}
-
-	svc := s3.New(sess)
-
-	input := &s3.DeleteObjectInput{
-		Bucket: aws.String(bucketName),
-		Key:    aws.String(objectKey),
-	}
-
-	_, err = svc.DeleteObject(input)
-	if err != nil {
-		return false, err
-	}
-
-	return true, nil
 }

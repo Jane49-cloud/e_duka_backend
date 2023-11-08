@@ -55,10 +55,13 @@ func ServeApplication() {
 	mainad.Mainadsroutes(router)
 	admin.AdminRoutes(router)
 
-	certFile := "./fullchain.pem"
-	keyFile := "./privkey.pem"
+	// certFile := "./fullchain.pem"
+	// keyFile := "./privkey.pem"
 
-	if err := router.RunTLS(":8000", certFile, keyFile); err != nil {
+	// if err := router.RunTLS(":8000", certFile, keyFile); err != nil {
+	// 	log.Fatalf("Failed to start server: %v", err)
+	// }
+	if err := router.Run("192.168.0.112:8000"); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 

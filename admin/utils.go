@@ -10,7 +10,6 @@ import (
 	"unicode"
 
 	"eleliafrika.com/backend/database"
-	"eleliafrika.com/backend/images"
 	"eleliafrika.com/backend/product"
 	"eleliafrika.com/backend/users"
 	"github.com/gin-gonic/gin"
@@ -126,15 +125,15 @@ func FetchAllUsersUtil() ([]users.User, error) {
 		return []users.User{}, err
 	}
 
-	if len(AllUsers) > 0 {
-		for _, user := range AllUsers {
-			userImage, err := images.DownloadImageFromBucket(user.UserImage)
-			if err != nil {
-				return []users.User{}, err
-			}
-			user.UserImage = userImage
-		}
-	}
+	// if len(AllUsers) > 0 {
+	// 	for _, user := range AllUsers {
+	// 		userImage, err := images.DownloadImageFromBucket(user.UserImage)
+	// 		if err != nil {
+	// 			return []users.User{}, err
+	// 		}
+	// 		user.UserImage = userImage
+	// 	}
+	// }
 
 	return AllUsers, nil
 }
