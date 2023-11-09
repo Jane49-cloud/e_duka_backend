@@ -76,7 +76,7 @@ type ClientUploader struct {
 var Uploader *ClientUploader
 
 func init() {
-	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/home/eleli/.config/gcloud/application_default_credentials.json") // FILL IN WITH YOUR FILE PATH
+	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "./application_default_credentials.json") // FILL IN WITH YOUR FILE PATH
 	client, err := storage.NewClient(context.Background())
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
