@@ -417,7 +417,6 @@ func ApproveProduct(context *gin.Context) {
 		} else {
 
 			success, err := ApproveAd(id)
-			fmt.Printf("this is query \n%s\n", id)
 			if err != nil {
 				response := models.Reply{
 					Error:   err.Error(),
@@ -440,7 +439,7 @@ func ApproveProduct(context *gin.Context) {
 					Message: "succesfully approved the product",
 					Success: true,
 				}
-				context.JSON(http.StatusBadRequest, response)
+				context.JSON(http.StatusOK, response)
 				return
 			}
 		}
