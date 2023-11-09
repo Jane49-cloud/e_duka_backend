@@ -115,9 +115,7 @@ func AddProduct(context *gin.Context) {
 				return
 			} else {
 
-				// save image to firebase store
-
-				url, err := images.UploadImageToFireBase(productInput.MainImage)
+				imageUrl, err := images.UploadHandler(productInput.ProductName, productInput.MainImage, context)
 				if err != nil {
 					response := models.Reply{
 						Message: "main image not saved",
@@ -133,7 +131,7 @@ func AddProduct(context *gin.Context) {
 					ProductPrice:       productInput.ProductPrice,
 					ProductDescription: productInput.ProductDescription,
 					UserID:             user.UserID,
-					MainImage:          url,
+					MainImage:          imageUrl,
 					Quantity:           productInput.Quantity,
 					ProductType:        productInput.ProductType,
 					TotalLikes:         0,
@@ -160,14 +158,23 @@ func AddProduct(context *gin.Context) {
 					return
 				} else {
 					for _, i := range productInput.ProductImages {
-
+						imageUrl, err := images.UploadHandler(productInput.ProductName, i, context)
+						if err != nil {
+							response := models.Reply{
+								Message: "error with saving image",
+								Success: false,
+								Error:   err.Error(),
+							}
+							context.JSON(http.StatusBadRequest, response)
+							return
+						}
 						imageuuid := uuid.New()
 						image := models.ProductImage{
 							ImageID:   imageuuid.String(),
 							ProductID: productuuid.String(),
-							ImageUrl:  i,
+							ImageUrl:  imageUrl,
 						}
-						_, err := image.Save()
+						_, err = image.Save()
 						if err != nil {
 							response := models.Reply{
 								Message: "error with saving image",
@@ -482,11 +489,21 @@ func UpdateProduct(context *gin.Context) {
 					context.JSON(http.StatusBadRequest, response)
 					return
 				} else {
+					imageUrl, err := images.UploadHandler(productUpdate.ProductName, productUpdate.MainImage, context)
+					if err != nil {
+						response := models.Reply{
+							Message: "could not update product",
+							Error:   err.Error(),
+							Success: false,
+						}
+						context.JSON(http.StatusBadRequest, response)
+						return
+					}
 					newproduct := Product{
 						ProductName:        productUpdate.ProductName,
 						ProductPrice:       productUpdate.ProductPrice,
 						ProductDescription: productUpdate.ProductDescription,
-						MainImage:          productUpdate.MainImage,
+						MainImage:          imageUrl,
 						Quantity:           productUpdate.Quantity,
 						ProductType:        productUpdate.ProductType,
 						Brand:              productUpdate.Brand,
