@@ -21,8 +21,8 @@ import (
 
 func LoadDatabase() {
 	database.Connect()
-	// database.Database.AutoMigrate(&admin.SystemAdmin{}, &users.User{}, &models.Brand{}, &models.Category{}, &models.SubCategory{}, &models.Comment{}, &product.Product{})
-	// database.Database.AutoMigrate(&models.ProductImage{}, &product.Product{})
+	// database.Database.AutoMigrate(&models.ProductImage{}, &admin.SystemAdmin{}, &users.User{}, &models.Brand{}, &models.Category{}, &models.SubCategory{}, &models.Comment{}, &product.Product{})
+
 }
 
 func LoadEnv() {
@@ -61,7 +61,7 @@ func ServeApplication() {
 	// if err := router.RunTLS(":8000", certFile, keyFile); err != nil {
 	// 	log.Fatalf("Failed to start server: %v", err)
 	// }
-	if err := router.Run(":8000"); err != nil {
+	if err := router.Run("192.168.0.112:8000"); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 

@@ -14,6 +14,7 @@ func Connect() {
 	var err error
 
 	db_url := os.Getenv("DB_URL")
+	// db_url := "host=localhost user=postgres password=mysecretpassword dbname=postgres port=5432 sslmode=disable"
 
 	// dsn := "host=localhost user=postgres password= dbname=eduka_locale port=5432 sslmode=disable"
 
@@ -22,6 +23,6 @@ func Connect() {
 	if err != nil {
 		panic(err)
 	} else {
-		fmt.Println("Successfully connected to the database")
+		fmt.Println("Connected to the database")
 	}
 }

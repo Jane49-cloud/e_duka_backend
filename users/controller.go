@@ -367,7 +367,7 @@ func FetchSellers(context *gin.Context) {
 			Message: "succesfully fetched all users",
 			Success: true,
 		}
-		context.JSON(http.StatusBadRequest, response)
+		context.JSON(http.StatusOK, response)
 		return
 	}
 }

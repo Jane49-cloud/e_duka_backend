@@ -46,6 +46,7 @@ func AddProduct(context *gin.Context) {
 		response := models.Reply{
 			Message: "error validating user input for sub category",
 			Success: false,
+			Error:   errors.New("operation not succesfull").Error(),
 		}
 		context.JSON(http.StatusBadRequest, response)
 		return
@@ -65,7 +66,7 @@ func AddProduct(context *gin.Context) {
 			response := models.Reply{
 				Message: "user not found",
 				Success: false,
-				Error:   err.Error(),
+				Error:   errors.New("user not found").Error(),
 			}
 			context.JSON(http.StatusBadRequest, response)
 			return
@@ -221,8 +222,10 @@ func GetAllProducts(context *gin.Context) {
 }
 func GetAllAds(context *gin.Context) {
 	var err error
+	query := context.Query("search")
 
 	products, err := FetchAds()
+
 	if err != nil {
 		response := models.Reply{
 			Message: "error fetching ads",
@@ -232,8 +235,26 @@ func GetAllAds(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response)
 		return
 	} else {
+		var productList []Product
+
+		if query != "" {
+			for _, item := range products {
+				if item.ProductName == query {
+					productList = append(productList, item)
+				} else if item.Category == query {
+					productList = append(productList, item)
+				} else if item.SubCategory == query {
+					productList = append(productList, item)
+				} else if item.Brand == query {
+					productList = append(productList, item)
+				}
+			}
+		} else {
+			productList = products
+		}
+
 		var data []interface{}
-		for _, product := range products {
+		for _, product := range productList {
 
 			currentuser, err := users.FindUserById(string(product.UserID))
 			if err != nil {

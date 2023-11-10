@@ -222,7 +222,7 @@ func UploadUserImage(imageString string, username string) {
 func FetchAllSellersUtil() ([]User, error) {
 	var AllUsers []User
 
-	err := database.Database.Where("is_approved=?", true).Find(&AllUsers).Error
+	err := database.Database.Find(&AllUsers).Error
 
 	if err != nil {
 		return []User{}, err
