@@ -223,6 +223,7 @@ func GetAllProducts(context *gin.Context) {
 func GetAllAds(context *gin.Context) {
 	var err error
 	query := context.Query("search")
+	query = strings.ToLower(query)
 
 	products, err := FetchAds()
 
@@ -239,14 +240,39 @@ func GetAllAds(context *gin.Context) {
 
 		if query != "" {
 			for _, item := range products {
-				if item.ProductName == query {
+				if strings.ToLower(item.ProductName) == query || strings.Contains(strings.ToLower(item.ProductName), query) {
 					productList = append(productList, item)
-				} else if item.Category == query {
+				} else if strings.ToLower(item.Category) == query || strings.Contains(strings.ToLower(item.Category), query) {
 					productList = append(productList, item)
-				} else if item.SubCategory == query {
+				} else if strings.ToLower(item.SubCategory) == query || strings.Contains(strings.ToLower(item.SubCategory), query) {
 					productList = append(productList, item)
-				} else if item.Brand == query {
+				} else if strings.ToLower(item.Brand) == query || strings.Contains(strings.ToLower(item.Brand), query) {
 					productList = append(productList, item)
+				} else if strings.Contains(strings.ToLower(item.ProductDescription), query) {
+					productList = append(productList, item)
+				} else {
+					currentuser, err := users.FindUserById(string(item.UserID))
+					if err != nil {
+						response := models.Reply{
+							Error:   err.Error(),
+							Message: "error finding the seller",
+							Success: false,
+						}
+						context.JSON(http.StatusBadRequest, response)
+						return
+					} else {
+						fname := currentuser.Firstname
+						mName := currentuser.Middlename
+						lname := currentuser.Lastname
+
+						if strings.ToLower(fname) == query || strings.Contains(fname, query) {
+							productList = append(productList, item)
+						} else if strings.ToLower(lname) == query || strings.Contains(lname, query) {
+							productList = append(productList, item)
+						} else if strings.ToLower(mName) == query || strings.Contains(mName, query) {
+							productList = append(productList, item)
+						}
+					}
 				}
 			}
 		} else {
