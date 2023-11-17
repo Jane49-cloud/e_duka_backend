@@ -7,7 +7,9 @@ import (
 	"eleliafrika.com/backend/admin"
 	"eleliafrika.com/backend/brands"
 	"eleliafrika.com/backend/category"
+	"eleliafrika.com/backend/chat"
 	"eleliafrika.com/backend/comments"
+	"eleliafrika.com/backend/conversation"
 	"eleliafrika.com/backend/database"
 	"eleliafrika.com/backend/images"
 	"eleliafrika.com/backend/mainad"
@@ -22,6 +24,7 @@ import (
 func LoadDatabase() {
 	database.Connect()
 	// database.Database.AutoMigrate(&models.ProductImage{}, &admin.SystemAdmin{}, &users.User{}, &models.Brand{}, &models.Category{}, &models.SubCategory{}, &models.Comment{}, &product.Product{})
+	// database.Database.AutoMigrate(&chat.Chat{}, &conversation.Conversation{})
 
 }
 
@@ -54,6 +57,8 @@ func ServeApplication() {
 	brands.BrandRoutes(router)
 	mainad.Mainadsroutes(router)
 	admin.AdminRoutes(router)
+	conversation.ConversationRoutes(router)
+	chat.ChatRoutes(router)
 
 	certFile := "./fullchain.pem"
 	keyFile := "./privkey.pem"
@@ -61,7 +66,7 @@ func ServeApplication() {
 	if err := router.RunTLS(":8000", certFile, keyFile); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
-	// if err := router.Run("192.168.0.112:8000"); err != nil {
+	// if err := router.Run(":8000"); err != nil {
 	// 	log.Fatalf("Failed to start server: %v", err)
 	// }
 

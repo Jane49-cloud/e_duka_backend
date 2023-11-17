@@ -6,20 +6,20 @@ import (
 )
 
 func ProductRoutes(router *gin.Engine) {
-	authRoutes := router.Group("/products")
+	productRoutes := router.Group("/products")
 
 	{
-		authRoutes.POST("/addproduct", users.JWTAuthMiddleWare(), AddProduct)
-		authRoutes.GET("/getproducts", GetAllProducts)
-		authRoutes.GET("/getproductsdata", GetAllAds)
-		authRoutes.GET("/getproducts/single/:id", GetSingleProduct)
-		authRoutes.GET("/getads/single/:id", GetSingleAd)
-		authRoutes.POST("/updateproduct/", UpdateProduct)
-		authRoutes.GET("/getproducts/singleuserproduct", users.JWTAuthMiddleWare(), FetchSingleUserProducts)
-		authRoutes.GET("/getads/singleuserads", FetchSingleUserAds)
-		authRoutes.POST("/deleteproduct", users.JWTAuthMiddleWare(), DeleteProduct)
-		authRoutes.POST("/restore", users.JWTAuthMiddleWare(), RestoreProduct)
-		authRoutes.POST("/activate", users.JWTAuthMiddleWare(), ActivateProduct)
-		authRoutes.POST("/deactivate", users.JWTAuthMiddleWare(), DeactivateProduct)
+		productRoutes.POST("/addproduct", users.JWTAuthMiddleWare(), AddProduct)
+		productRoutes.GET("/getproducts", GetAllProducts)
+		productRoutes.GET("/getproductsdata", GetAllAds)
+		productRoutes.GET("/getproducts/single/:id", GetSingleProduct)
+		productRoutes.GET("/getads/single/:id", GetSingleAd)
+		productRoutes.POST("/updateproduct/", UpdateProduct)
+		productRoutes.GET("/getproducts/singleuserproduct", users.JWTAuthMiddleWare(), FetchSingleUserProducts)
+		productRoutes.GET("/getads/singleuserads", FetchSingleUserAds)
+		productRoutes.POST("/deleteproduct", users.JWTAuthMiddleWare(), DeleteProduct)
+		productRoutes.POST("/restore", users.JWTAuthMiddleWare(), RestoreProduct)
+		productRoutes.POST("/activate", users.JWTAuthMiddleWare(), ActivateProduct)
+		productRoutes.POST("/deactivate", users.JWTAuthMiddleWare(), DeactivateProduct)
 	}
 }

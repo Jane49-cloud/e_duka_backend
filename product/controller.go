@@ -32,6 +32,7 @@ func AddProduct(context *gin.Context) {
 	productuuid := uuid.New()
 	currentTime := time.Now()
 	formattedTime := currentTime.Format("2006-01-02 15:04:05")
+
 	success, err := ValidateProductInput(&productInput)
 	if err != nil {
 		response := models.Reply{
@@ -60,7 +61,7 @@ func AddProduct(context *gin.Context) {
 				Success: false,
 				Error:   err.Error(),
 			}
-			context.JSON(http.StatusBadRequest, response)
+			context.JSON(http.StatusUnauthorized, response)
 			return
 		} else if user.Firstname == "" {
 			response := models.Reply{
@@ -68,7 +69,7 @@ func AddProduct(context *gin.Context) {
 				Success: false,
 				Error:   errors.New("user not found").Error(),
 			}
-			context.JSON(http.StatusBadRequest, response)
+			context.JSON(http.StatusUnauthorized, response)
 			return
 
 			// else if !user.IsApproved {
