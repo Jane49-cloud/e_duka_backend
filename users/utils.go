@@ -129,7 +129,7 @@ func ValidateRegisterInput(user *RegisterInput) (bool, error) {
 			} else if regexp.MustCompile(numPattern).MatchString(user.UserLocation) {
 				return false, errors.New("location must not contain a numerical digit")
 			}
-		} else if len(value) < 3 {
+		} else if len(value) <= 3 {
 			return false, errors.New("invalid input length for field")
 		} else {
 			if regexp.MustCompile(numPattern).MatchString(user.Firstname) {

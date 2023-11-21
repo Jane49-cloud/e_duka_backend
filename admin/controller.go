@@ -8,6 +8,7 @@ import (
 	"time"
 
 	globalutils "eleliafrika.com/backend/global_utils"
+	"eleliafrika.com/backend/images"
 	"eleliafrika.com/backend/models"
 	"eleliafrika.com/backend/product"
 	"eleliafrika.com/backend/users"
@@ -52,13 +53,12 @@ func Register(context *gin.Context) {
 	currentTime := time.Now()
 	formattedTime := currentTime.Format("2006-01-02 15:04:05")
 
-	// userImagepath, err := users.UploadUserImage(input.AdminImage, input.AdminName)
-
+	imageUrl, err := images.UploadHandler(input.AdminName, input.AdminImage, context)
 	if err != nil {
 		response := models.Reply{
-			Error:   err.Error(),
-			Message: "error uploading user image",
+			Message: "main image not saved",
 			Success: false,
+			Error:   err.Error(),
 		}
 		context.JSON(http.StatusBadRequest, response)
 		return
@@ -68,7 +68,7 @@ func Register(context *gin.Context) {
 		AdminID:      randomuuid.String(),
 		AdminName:    input.AdminName,
 		Email:        input.Email,
-		AdminImage:   input.AdminImage,
+		AdminImage:   imageUrl,
 		Cell:         input.Cell,
 		Password:     input.Password,
 		DateAdded:    formattedTime,
@@ -111,7 +111,7 @@ func Register(context *gin.Context) {
 		if err != nil {
 			response := models.Reply{
 				Error:   err.Error(),
-				Message: "error generatin token for user",
+				Message: "error generating token for user",
 				Success: false,
 			}
 			context.JSON(http.StatusBadRequest, response)
@@ -122,7 +122,7 @@ func Register(context *gin.Context) {
 			Message: "admin added",
 			Success: true,
 		}
-		context.JSON(http.StatusBadRequest, response)
+		context.JSON(http.StatusOK, response)
 		return
 	}
 }
@@ -203,7 +203,7 @@ func Login(context *gin.Context) {
 				Message: "login succesfull",
 				Success: true,
 			}
-			context.JSON(http.StatusBadRequest, response)
+			context.JSON(http.StatusOK, response)
 			return
 		}
 	}

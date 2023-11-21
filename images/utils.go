@@ -54,7 +54,7 @@ func UploadHandler(productName string, imageString string, context *gin.Context)
 		return "", err
 	}
 
-	imageUrl := fmt.Sprintf("https://storage.googleapis.com/%s/eduka/product_images/%s",
+	imageUrl := fmt.Sprintf("https://storage.googleapis.com/%s/eduka/images/%s",
 		BucketName,
 		strings.ReplaceAll(productName, " ", "")+"/"+imageUUID.String())
 
@@ -86,7 +86,7 @@ func init() {
 		cl:         client,
 		bucketName: BucketName,
 		projectID:  projectID,
-		uploadPath: "eduka/product_images/",
+		uploadPath: "eduka/images/",
 	}
 
 }

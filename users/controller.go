@@ -7,6 +7,7 @@ import (
 
 	"time"
 
+	"eleliafrika.com/backend/images"
 	"eleliafrika.com/backend/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -32,7 +33,7 @@ func Register(context *gin.Context) {
 			Message: "error validating data",
 			Success: false,
 		}
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 	if !success {
@@ -52,6 +53,17 @@ func Register(context *gin.Context) {
 	currentTime := time.Now()
 	formattedTime := currentTime.Format("2006-01-02 15:04:05")
 
+	imageUrl, err := images.UploadHandler(input.Firstname+input.Lastname, input.UserImage, context)
+	if err != nil {
+		response := models.Reply{
+			Message: "main image not saved",
+			Success: false,
+			Error:   err.Error(),
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
+	}
+
 	user := User{
 		UserID:          randomuuid.String(),
 		Firstname:       input.Firstname,
@@ -59,7 +71,7 @@ func Register(context *gin.Context) {
 		Lastname:        input.Lastname,
 		Location:        input.UserLocation,
 		Email:           input.Email,
-		UserImage:       input.UserImage,
+		UserImage:       imageUrl,
 		Phone:           input.Phone,
 		Password:        input.Password,
 		DateJoined:      formattedTime,

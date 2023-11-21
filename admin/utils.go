@@ -28,7 +28,6 @@ func ValidateRegisterInput(admin *AddAdmin) (bool, error) {
 	capPattern := "[A-Z]"
 	for _, value := range details {
 		if value == admin.AdminName {
-			value = strings.TrimSpace(admin.AdminName)
 			if len(value) < 5 {
 				return false, errors.New("admin name is too short")
 			} else if len(value) > 20 {
@@ -42,8 +41,6 @@ func ValidateRegisterInput(admin *AddAdmin) (bool, error) {
 			admin.Email = strings.ToLower(admin.Email)
 			if len(value) < 8 {
 				return false, errors.New("email should be longer than 8 characters")
-			} else if len(value) > 20 {
-				return false, errors.New("email too long")
 			} else if !strings.Contains(admin.Email, "@") {
 				return false, errors.New("email should contain @: " + value)
 			} else if !strings.Contains(admin.Email, ".") {
