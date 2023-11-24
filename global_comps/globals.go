@@ -24,7 +24,7 @@ import (
 func LoadDatabase() {
 	database.Connect()
 	// database.Database.AutoMigrate(&models.ProductImage{}, &admin.SystemAdmin{}, &users.User{}, &models.Brand{}, &models.Category{}, &models.SubCategory{}, &models.Comment{}, &product.Product{})
-	// database.Database.AutoMigrate(&chat.Chat{}, &conversation.Conversation{})
+	// database.Database.AutoMigrate(&users.User{})
 
 }
 

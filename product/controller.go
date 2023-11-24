@@ -2,12 +2,12 @@ package product
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
 	"eleliafrika.com/backend/category"
-	globalutils "eleliafrika.com/backend/global_utils"
 	"eleliafrika.com/backend/images"
 	"eleliafrika.com/backend/models"
 	subcategory "eleliafrika.com/backend/subcategories"
@@ -224,7 +224,7 @@ func GetAllProducts(context *gin.Context) {
 func GetAllAds(context *gin.Context) {
 	var err error
 	query := context.Query("search")
-	query = strings.ToLower(query)
+	query = strings.ReplaceAll(strings.ToLower(query), "'", "")
 
 	products, err := FetchAds()
 
@@ -241,40 +241,67 @@ func GetAllAds(context *gin.Context) {
 
 		if query != "" {
 			for _, item := range products {
-				if strings.ToLower(item.ProductName) == query || strings.Contains(strings.ToLower(item.ProductName), query) {
-					productList = append(productList, item)
-				} else if strings.ToLower(item.Category) == query || strings.Contains(strings.ToLower(item.Category), query) {
-					productList = append(productList, item)
-				} else if strings.ToLower(item.SubCategory) == query || strings.Contains(strings.ToLower(item.SubCategory), query) {
-					productList = append(productList, item)
-				} else if strings.ToLower(item.Brand) == query || strings.Contains(strings.ToLower(item.Brand), query) {
-					productList = append(productList, item)
-				} else if strings.Contains(strings.ToLower(item.ProductDescription), query) {
-					productList = append(productList, item)
-				} else {
-					currentuser, err := users.FindUserById(string(item.UserID))
-					if err != nil {
-						response := models.Reply{
-							Error:   err.Error(),
-							Message: "error finding the seller",
-							Success: false,
-						}
-						context.JSON(http.StatusBadRequest, response)
-						return
-					} else {
-						fname := currentuser.Firstname
-						mName := currentuser.Middlename
-						lname := currentuser.Lastname
+				// if strings.ToLower(item.ProductName) == query || strings.Contains(strings.ToLower(item.ProductName), query) {
+				// 	productList = append(productList, item)
+				// }
 
-						if strings.ToLower(fname) == query || strings.Contains(fname, query) {
+				// if strings.ToLower(item.Category) == query || strings.Contains(strings.ToLower(item.Category), query) {
+				// 	productList = append(productList, item)
+				// }
+				// if strings.ToLower(item.SubCategory) == query || strings.Contains(strings.ToLower(item.SubCategory), query) {
+				// 	productList = append(productList, item)
+				// }
+				// if strings.ToLower(item.Brand) == query || strings.Contains(strings.ToLower(item.Brand), query) {
+				// 	productList = append(productList, item)
+				// }
+				// if strings.Contains(strings.ToLower(item.ProductDescription), query) {
+				// 	productList = append(productList, item)
+				// }
+				splitName := strings.ReplaceAll(query, "and", "")
+				fmt.Println(splitName)
+				newQ := strings.Split(splitName, " ")
+				fmt.Println(len(newQ))
+
+				for _, segment := range newQ {
+					if segment != "" {
+						if strings.ToLower(item.ProductName) == segment || strings.Contains(strings.ToLower(item.ProductName), segment) {
 							productList = append(productList, item)
-						} else if strings.ToLower(lname) == query || strings.Contains(lname, query) {
+						} else if strings.ToLower(item.Category) == segment || strings.Contains(strings.ToLower(item.Category), segment) {
 							productList = append(productList, item)
-						} else if strings.ToLower(mName) == query || strings.Contains(mName, query) {
+						} else if strings.ToLower(item.SubCategory) == segment || strings.Contains(strings.ToLower(item.SubCategory), segment) {
+							productList = append(productList, item)
+						} else if strings.ToLower(item.Brand) == segment || strings.Contains(strings.ToLower(item.Brand), segment) {
+							productList = append(productList, item)
+						} else if strings.Contains(strings.ToLower(item.ProductDescription), segment) {
 							productList = append(productList, item)
 						}
 					}
+
 				}
+
+				currentuser, err := users.FindUserById(string(item.UserID))
+				if err != nil {
+					response := models.Reply{
+						Error:   err.Error(),
+						Message: "error finding the seller",
+						Success: false,
+					}
+					context.JSON(http.StatusBadRequest, response)
+					return
+				} else {
+					fname := currentuser.Firstname
+					mName := currentuser.Middlename
+					lname := currentuser.Lastname
+
+					if strings.ToLower(fname) == query || strings.Contains(fname, query) {
+						productList = append(productList, item)
+					} else if strings.ToLower(lname) == query || strings.Contains(lname, query) {
+						productList = append(productList, item)
+					} else if strings.ToLower(mName) == query || strings.Contains(mName, query) {
+						productList = append(productList, item)
+					}
+				}
+
 			}
 		} else {
 			productList = products
@@ -497,7 +524,12 @@ func UpdateProduct(context *gin.Context) {
 			context.JSON(http.StatusBadRequest, response)
 			return
 		} else if user.Firstname == "" {
-			globalutils.UnAuthenticated(context)
+			response := models.Reply{
+				Error:   err.Error(),
+				Message: "error finding user",
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
 			return
 		} else {
 
@@ -527,7 +559,13 @@ func UpdateProduct(context *gin.Context) {
 					context.JSON(http.StatusBadRequest, response)
 					return
 				} else if !userOwnsProduct {
-					globalutils.UnAuthorized(context)
+					response := models.Reply{
+						Error:   err.Error(),
+						Message: "error authorizing operation user",
+						Success: false,
+					}
+					context.JSON(http.StatusBadRequest, response)
+					return
 				} else if productExist.ProductName == "" {
 					response := models.Reply{
 						Error:   errors.New("error fetching the product").Error(),
@@ -672,6 +710,7 @@ func ActivateProduct(context *gin.Context) {
 	}
 }
 func DeactivateProduct(context *gin.Context) {
+	fmt.Println("deativating")
 	productid := context.Query("id")
 	query := "product_id=" + productid
 
@@ -738,7 +777,7 @@ func DeactivateProduct(context *gin.Context) {
 				Message: "succesfully deactivated the product",
 				Success: true,
 			}
-			context.JSON(http.StatusBadRequest, response)
+			context.JSON(http.StatusOK, response)
 			return
 
 		}

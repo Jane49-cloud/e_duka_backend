@@ -31,9 +31,11 @@ func GenerateJWT(user User) (string, error) {
 
 func ValidateJWT(context *gin.Context) error {
 	token, err := GetToken(context)
+
 	if err != nil {
 		return err
 	}
+
 	_, ok := token.Claims.(jwt.MapClaims)
 	if ok && token.Valid {
 		return nil
@@ -50,11 +52,11 @@ func GetToken(context *gin.Context) (*jwt.Token, error) {
 		}
 		return privateKey, nil
 	})
-
 	return token, err
 }
 
 func JWTAuthMiddleWare() gin.HandlerFunc {
+	fmt.Println("authenticating")
 	return func(context *gin.Context) {
 		err := ValidateJWT(context)
 		if err != nil {
@@ -86,7 +88,6 @@ func ValidateRegisterInput(user *RegisterInput) (bool, error) {
 	userDetails := []string{user.Email, user.Firstname, user.Lastname, user.UserLocation, user.Phone, user.Password}
 	charPattern := "[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>?]"
 	numPattern := "[0-9]"
-	capPattern := "[A-Z]"
 	for _, value := range userDetails {
 		value = strings.ReplaceAll(value, " ", "")
 		if value == user.Email {
@@ -113,14 +114,8 @@ func ValidateRegisterInput(user *RegisterInput) (bool, error) {
 			}
 		} else if value == user.Password {
 
-			if len(value) < 8 {
+			if len(value) < 3 {
 				return false, errors.New("password is too short")
-			} else if !regexp.MustCompile(charPattern).MatchString(user.Password) {
-				return false, errors.New("password must contain atleast one special character")
-			} else if !regexp.MustCompile(numPattern).MatchString(user.Password) {
-				return false, errors.New("password must contain atleast numerical digit")
-			} else if !regexp.MustCompile(capPattern).MatchString(user.Password) {
-				return false, errors.New("password must contain a capital letter")
 			}
 		} else if value == user.UserLocation {
 			user.UserLocation = strings.ToLower(user.UserLocation)
@@ -136,11 +131,6 @@ func ValidateRegisterInput(user *RegisterInput) (bool, error) {
 				return false, errors.New("first name cannot contain numbers")
 			} else if regexp.MustCompile(charPattern).MatchString(user.Firstname) {
 				return false, errors.New("first name cannot contain special characters")
-			}
-			if regexp.MustCompile(numPattern).MatchString(user.Middlename) {
-				return false, errors.New("middle name cannot contain numbers")
-			} else if regexp.MustCompile(charPattern).MatchString(user.Middlename) {
-				return false, errors.New("middle name cannot contain special characters")
 			}
 			if regexp.MustCompile(numPattern).MatchString(user.Lastname) {
 				return false, errors.New("last name cannot contain numbers")
@@ -201,22 +191,6 @@ func UpdateUserSpecificField(userId string, field string, value any) (User, erro
 		return User{}, errors.New("could not update")
 	}
 	return updatedUser, nil
-}
-
-func UploadUserImage(imageString string, username string) {
-
-	// imageuuid := uuid.New()
-	// filename := strings.ReplaceAll(username, " ", "") + imageuuid.String()
-
-	// imageBytes, err := base64.StdEncoding.DecodeString(imageString)
-	// if err != nil {
-	// 	return "", err
-	// }
-
-	// imagepath, err := images.UploadImageToBucket(username, "user-images", imageBytes, filename)
-	// if err != nil {
-	// 	return "", nil
-	// }
 }
 
 func FetchAllSellersUtil() ([]User, error) {

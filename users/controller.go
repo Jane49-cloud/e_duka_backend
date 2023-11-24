@@ -135,7 +135,6 @@ func Register(context *gin.Context) {
 		}
 		context.JSON(http.StatusCreated, response)
 	}
-
 }
 
 // code for login in
@@ -209,6 +208,20 @@ func Login(context *gin.Context) {
 
 		}
 
+		_, err = UpdateUserUtil(user.UserID, User{
+			Token: token,
+		})
+
+		if err != nil {
+			response := models.Reply{
+				Error:   err.Error(),
+				Message: "error while generating token",
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
+		}
+
 		response := models.Reply{
 			Message: "Authentication successful",
 			Data:    token,
@@ -250,6 +263,7 @@ func GetSingleUser(context *gin.Context) {
 				UserID:     user.UserID,
 				IsApproved: user.IsApproved,
 				Phone:      user.Phone,
+				Token:      user.Token,
 			}
 
 			response := models.Reply{
@@ -293,10 +307,10 @@ func FetchSingleUser(context *gin.Context) {
 		}
 		response := models.Reply{
 			Message: "user fetched succesfully",
-			Data:    user,
+			Data:    user.Token,
 			Success: true,
 		}
-		context.JSON(http.StatusBadRequest, response)
+		context.JSON(http.StatusOK, response)
 		return
 	}
 }
@@ -381,5 +395,56 @@ func FetchSellers(context *gin.Context) {
 		}
 		context.JSON(http.StatusOK, response)
 		return
+	}
+}
+func Logoutuser(context *gin.Context) {
+	user, err := CurrentUser(context)
+	if err != nil {
+		response := models.Reply{
+			Message: "error fetching current user",
+			Error:   err.Error(),
+			Success: false,
+		}
+		context.JSON(http.StatusBadRequest, response)
+		return
+	} else {
+		if user.Firstname == "" {
+
+			response := models.Reply{
+				Message: "user does not exist",
+				Error:   errors.New("error user does not exist").Error(),
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
+		} else if user.Token == "none" {
+			response := models.Reply{
+				Message: "error fetching token",
+				Error:   errors.New("error token does not exist").Error(),
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
+		} else {
+			_, err := UpdateUserUtil(user.UserID, User{
+				Token: "none",
+			})
+			if err != nil {
+				response := models.Reply{
+					Message: "error login out user",
+					Error:   err.Error(),
+					Success: false,
+				}
+				context.JSON(http.StatusBadRequest, response)
+				return
+			} else {
+				response := models.Reply{
+					Message: "Succesfully logged out the user",
+					Success: true,
+				}
+				context.JSON(http.StatusOK, response)
+				return
+			}
+		}
 	}
 }

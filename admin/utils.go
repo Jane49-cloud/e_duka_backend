@@ -122,16 +122,6 @@ func FetchAllUsersUtil() ([]users.User, error) {
 		return []users.User{}, err
 	}
 
-	// if len(AllUsers) > 0 {
-	// 	for _, user := range AllUsers {
-	// 		userImage, err := images.DownloadImageFromBucket(user.UserImage)
-	// 		if err != nil {
-	// 			return []users.User{}, err
-	// 		}
-	// 		user.UserImage = userImage
-	// 	}
-	// }
-
 	return AllUsers, nil
 }
 func ApproveAd(id string) (bool, error) {
@@ -197,4 +187,12 @@ func CurrentUser(context *gin.Context) (SystemAdmin, error) {
 		return SystemAdmin{}, err
 	}
 	return user, nil
+}
+func UpdateAdminUtil(adminId string, update SystemAdmin) (SystemAdmin, error) {
+	var updatedAdmin SystemAdmin
+	result := database.Database.Model(&updatedAdmin).Where("admin_id=?", adminId).Updates(update)
+	if result.RowsAffected == 0 {
+		return SystemAdmin{}, errors.New("could not update")
+	}
+	return updatedAdmin, nil
 }

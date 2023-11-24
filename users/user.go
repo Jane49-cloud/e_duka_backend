@@ -16,6 +16,7 @@ type User struct {
 	Middlename      string `gorm:"size:255;not null" json:"middlename"`
 	Lastname        string `gorm:"size:255;not null" json:"lastname"`
 	Email           string `gorm:"size:255;not null;unique" json:"email"`
+	Token           string `gorm:"size:255;not null;unique" json:"token"`
 	Phone           string `gorm:"size:255;not null;unique" json:"phone"`
 	Password        string `gorm:"size:255;not null;" json:"password"`
 	UserImage       string `gorm:"type:text;size:65535;" json:"userimage"`
