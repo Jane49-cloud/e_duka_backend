@@ -241,27 +241,9 @@ func GetAllAds(context *gin.Context) {
 
 		if query != "" {
 			for _, item := range products {
-				// if strings.ToLower(item.ProductName) == query || strings.Contains(strings.ToLower(item.ProductName), query) {
-				// 	productList = append(productList, item)
-				// }
-
-				// if strings.ToLower(item.Category) == query || strings.Contains(strings.ToLower(item.Category), query) {
-				// 	productList = append(productList, item)
-				// }
-				// if strings.ToLower(item.SubCategory) == query || strings.Contains(strings.ToLower(item.SubCategory), query) {
-				// 	productList = append(productList, item)
-				// }
-				// if strings.ToLower(item.Brand) == query || strings.Contains(strings.ToLower(item.Brand), query) {
-				// 	productList = append(productList, item)
-				// }
-				// if strings.Contains(strings.ToLower(item.ProductDescription), query) {
-				// 	productList = append(productList, item)
-				// }
 				splitName := strings.ReplaceAll(query, "and", "")
 				fmt.Println(splitName)
 				newQ := strings.Split(splitName, " ")
-				fmt.Println(len(newQ))
-
 				for _, segment := range newQ {
 					if segment != "" {
 						if strings.ToLower(item.ProductName) == segment || strings.Contains(strings.ToLower(item.ProductName), segment) {
@@ -585,6 +567,7 @@ func UpdateProduct(context *gin.Context) {
 						context.JSON(http.StatusBadRequest, response)
 						return
 					}
+
 					newproduct := Product{
 						ProductName:        productUpdate.ProductName,
 						ProductPrice:       productUpdate.ProductPrice,
@@ -630,7 +613,7 @@ func UpdateProduct(context *gin.Context) {
 					Success: false,
 					Error:   "supply product id!!",
 				}
-				context.JSON(http.StatusBadRequest, response)
+				context.JSON(http.StatusOK, response)
 			}
 		}
 	}
