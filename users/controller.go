@@ -136,8 +136,6 @@ func Register(context *gin.Context) {
 		context.JSON(http.StatusCreated, response)
 	}
 }
-
-// code for login in
 func Login(context *gin.Context) {
 	var input LoginInput
 

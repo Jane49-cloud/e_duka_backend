@@ -68,7 +68,7 @@ func FetchSingleUserAdsUtil(userid string) ([]Product, error) {
 	return productList, nil
 }
 func ValidateProductInput(product *AddProductInput) (bool, error) {
-	productDetails := []string{product.ProductName, product.ProductPrice, product.ProductDescription, product.MainImage, product.ProductType, product.Brand, product.Category, product.SubCategory}
+	productDetails := []string{product.ProductName, product.ProductPrice, product.ProductDescription, product.ProductType, product.Brand, product.Category, product.SubCategory}
 	charPattern := "[!@#$%^&*()\\=\\[\\]{};\\\\|<>?]"
 	for _, value := range productDetails {
 		if value == product.ProductName {
@@ -183,7 +183,6 @@ func RestoreProductUtil(query string) (bool, error) {
 	}
 	return true, nil
 }
-
 func ValidateUserOwnsProduct(userId string, productUserId string) (bool, error) {
 	if userId == "" {
 		return false, errors.New("the user does not exist")

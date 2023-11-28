@@ -238,6 +238,7 @@ func GetAllAds(context *gin.Context) {
 		return
 	} else {
 		var productList []Product
+		addedProducts := make(map[uint]bool) // Map to store the index of added products
 
 		if query != "" {
 			for _, item := range products {
@@ -247,15 +248,30 @@ func GetAllAds(context *gin.Context) {
 				for _, segment := range newQ {
 					if segment != "" {
 						if strings.ToLower(item.ProductName) == segment || strings.Contains(strings.ToLower(item.ProductName), segment) {
-							productList = append(productList, item)
+							if _, exists := addedProducts[item.ID]; !exists {
+								productList = append(productList, item)
+								addedProducts[item.ID] = true
+							}
 						} else if strings.ToLower(item.Category) == segment || strings.Contains(strings.ToLower(item.Category), segment) {
-							productList = append(productList, item)
+							if _, exists := addedProducts[item.ID]; !exists {
+								productList = append(productList, item)
+								addedProducts[item.ID] = true
+							}
 						} else if strings.ToLower(item.SubCategory) == segment || strings.Contains(strings.ToLower(item.SubCategory), segment) {
-							productList = append(productList, item)
+							if _, exists := addedProducts[item.ID]; !exists {
+								productList = append(productList, item)
+								addedProducts[item.ID] = true
+							}
 						} else if strings.ToLower(item.Brand) == segment || strings.Contains(strings.ToLower(item.Brand), segment) {
-							productList = append(productList, item)
+							if _, exists := addedProducts[item.ID]; !exists {
+								productList = append(productList, item)
+								addedProducts[item.ID] = true
+							}
 						} else if strings.Contains(strings.ToLower(item.ProductDescription), segment) {
-							productList = append(productList, item)
+							if _, exists := addedProducts[item.ID]; !exists {
+								productList = append(productList, item)
+								addedProducts[item.ID] = true
+							}
 						}
 					}
 

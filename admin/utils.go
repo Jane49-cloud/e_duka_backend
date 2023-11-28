@@ -20,12 +20,11 @@ import (
 var privateKey = []byte(os.Getenv("JWT_PRIVATE_KEY"))
 
 func ValidateRegisterInput(admin *AddAdmin) (bool, error) {
-	details := []string{admin.AdminName, admin.Email, admin.Cell, admin.Password, admin.Role}
+	details := []string{admin.AdminName, admin.Password, admin.Email, admin.Cell, admin.Role}
 
 	charPattern := "[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>?]"
 	emailPattern := "[!#$%^&*()+\\=\\[\\]{};':\"\\\\|,<>?]"
 	numPattern := "[0-9]"
-	capPattern := "[A-Z]"
 	for _, value := range details {
 		if value == admin.AdminName {
 			if len(value) < 5 {
@@ -61,14 +60,8 @@ func ValidateRegisterInput(admin *AddAdmin) (bool, error) {
 				}
 			}
 		} else if value == admin.Password {
-			if len(value) < 7 {
+			if len(value) < 3 {
 				return false, errors.New("password is too short")
-			} else if !regexp.MustCompile(charPattern).MatchString(admin.Password) {
-				return false, errors.New("password must contain atleast one special character")
-			} else if !regexp.MustCompile(numPattern).MatchString(admin.Password) {
-				return false, errors.New("password must contain atleast numerical digit")
-			} else if !regexp.MustCompile(capPattern).MatchString(admin.Password) {
-				return false, errors.New("password must contain a capital letter")
 			}
 		} else if value == admin.Role {
 			admin.Role = strings.ToLower(admin.Role)
@@ -83,10 +76,7 @@ func ValidateRegisterInput(admin *AddAdmin) (bool, error) {
 }
 func ValidateLoginInput(admin *AdminLogin) (bool, error) {
 	userDetails := []string{admin.Email, admin.Password}
-	charPattern := "[!#$%^&*()+\\=\\[\\]{};':\"\\\\|,<>?@.-]"
 	emailPattern := "[!#$%^&*()+\\=\\[\\]{};':\"\\\\|,<>?]"
-	numPattern := "[0-9]"
-	capPattern := "[A-Z]"
 	for _, value := range userDetails {
 		if value == admin.Email {
 			if len(value) < 8 {
@@ -99,15 +89,8 @@ func ValidateLoginInput(admin *AdminLogin) (bool, error) {
 				return false, errors.New("invalid characters in email")
 			}
 		} else if value == admin.Password {
-
-			if len(value) < 8 {
+			if len(value) < 3 {
 				return false, errors.New("password is too short")
-			} else if !regexp.MustCompile(charPattern).MatchString(admin.Password) {
-				return false, errors.New("password must contain atleast one special character")
-			} else if !regexp.MustCompile(numPattern).MatchString(admin.Password) {
-				return false, errors.New("password must contain atleast numerical digit")
-			} else if !regexp.MustCompile(capPattern).MatchString(admin.Password) {
-				return false, errors.New("password must contain a capital letter")
 			}
 		}
 	}
@@ -143,7 +126,6 @@ func FindAdminByEmail(email string) (SystemAdmin, error) {
 	}
 	return admin, nil
 }
-
 func GenerateJWT(admin SystemAdmin) (string, error) {
 	tokenTTL, _ := strconv.Atoi(os.Getenv("TOKEN_TTL"))
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -172,7 +154,6 @@ func ValidateHashPassword(hashedPassword string, userPassword string) (bool, err
 	}
 	return true, nil
 }
-
 func CurrentUser(context *gin.Context) (SystemAdmin, error) {
 	err := users.ValidateJWT(context)
 	if err != nil {

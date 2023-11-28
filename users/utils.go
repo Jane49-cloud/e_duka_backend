@@ -113,7 +113,6 @@ func ValidateRegisterInput(user *RegisterInput) (bool, error) {
 				}
 			}
 		} else if value == user.Password {
-
 			if len(value) < 3 {
 				return false, errors.New("password is too short")
 			}
