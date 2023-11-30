@@ -62,13 +62,12 @@ func ServeApplication() {
 
 	certFile := "./fullchain.pem"
 	keyFile := "./privkey.pem"
-
 	if err := router.RunTLS(":8000", certFile, keyFile); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
-	// if err := router.Run("192.168.0.112:8000"); err != nil {
-	// 	log.Fatalf("Failed to start server: %v", err)
-	// }
+	//if err := router.Run("192.168.0.112:8000"); err != nil {
+	//	log.Fatalf("Failed to start server: %v", err)
+	//}
 
 	fmt.Println("Server running on port 8000 (HTTPS)")
 }
