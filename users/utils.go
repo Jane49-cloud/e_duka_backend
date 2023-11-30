@@ -143,10 +143,7 @@ func ValidateRegisterInput(user *RegisterInput) (bool, error) {
 
 func ValidateLoginInput(user *LoginInput) (bool, error) {
 	userDetails := []string{user.Email, user.Password}
-	charPattern := "[!#$%^&*()+\\=\\[\\]{};':\"\\\\|,<>?@.-]"
 	emailPattern := "[!#$%^&*()+\\=\\[\\]{};':\"\\\\|,<>?]"
-	numPattern := "[0-9]"
-	capPattern := "[A-Z]"
 	for _, value := range userDetails {
 		if value == user.Email {
 			if len(value) < 8 {
@@ -159,14 +156,8 @@ func ValidateLoginInput(user *LoginInput) (bool, error) {
 				return false, errors.New("invalid characters in email")
 			}
 		} else if value == user.Password {
-			if len(value) < 8 {
+			if len(value) < 3 {
 				return false, errors.New("password is too short")
-			} else if !regexp.MustCompile(charPattern).MatchString(user.Password) {
-				return false, errors.New("password must contain atleast one special character")
-			} else if !regexp.MustCompile(numPattern).MatchString(user.Password) {
-				return false, errors.New("password must contain atleast numerical digit")
-			} else if !regexp.MustCompile(capPattern).MatchString(user.Password) {
-				return false, errors.New("password must contain a capital letter")
 			}
 		}
 	}

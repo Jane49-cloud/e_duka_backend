@@ -36,7 +36,7 @@ func AddProduct(context *gin.Context) {
 	success, err := ValidateProductInput(&productInput)
 	if err != nil {
 		response := models.Reply{
-			Message: "error validating user input",
+			Message: err.Error(),
 			Error:   err.Error(),
 			Success: false,
 			Data:    productInput,
@@ -238,7 +238,7 @@ func GetAllAds(context *gin.Context) {
 		return
 	} else {
 		var productList []Product
-		addedProducts := make(map[uint]bool) // Map to store the index of added products
+		addedProducts := make(map[uint]bool)
 
 		if query != "" {
 			for _, item := range products {

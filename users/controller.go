@@ -30,7 +30,7 @@ func Register(context *gin.Context) {
 
 		response := models.Reply{
 			Error:   err.Error(),
-			Message: "error validating data",
+			Message: err.Error(),
 			Success: false,
 		}
 		context.JSON(http.StatusBadRequest, response)
@@ -67,7 +67,6 @@ func Register(context *gin.Context) {
 	user := User{
 		UserID:          randomuuid.String(),
 		Firstname:       input.Firstname,
-		Middlename:      input.Middlename,
 		Lastname:        input.Lastname,
 		Location:        input.UserLocation,
 		Email:           input.Email,
@@ -79,7 +78,7 @@ func Register(context *gin.Context) {
 		LastInteraction: formattedTime,
 	}
 
-	userExists, err := FindUserByEmail(user.Email)
+	emailExists, err := FindUserByEmail(user.Email)
 
 	if err != nil {
 
@@ -91,7 +90,7 @@ func Register(context *gin.Context) {
 
 		context.JSON(http.StatusBadRequest, response)
 		return
-	} else if userExists.Email != "" {
+	} else if emailExists.Email != "" {
 
 		response := models.Reply{
 			Error:   errors.New("user does exist").Error(),
@@ -101,8 +100,31 @@ func Register(context *gin.Context) {
 
 		context.JSON(http.StatusBadRequest, response)
 		return
+	}
+	phoneExists, err := FindUserByPhone(user.Phone)
+	if err != nil {
+
+		response := models.Reply{
+			Error:   err.Error(),
+			Message: "error fetching user data",
+			Success: false,
+		}
+
+		context.JSON(http.StatusBadRequest, response)
+		return
+	} else if phoneExists.Phone != "" {
+
+		response := models.Reply{
+			Error:   errors.New("user does exist").Error(),
+			Message: "phone number has already been used",
+			Success: false,
+		}
+
+		context.JSON(http.StatusBadRequest, response)
+		return
 	} else {
 
+		// fmt.Println(input.Phone)
 		_, err := user.Save()
 		if err != nil {
 
@@ -152,7 +174,7 @@ func Login(context *gin.Context) {
 	success, err := ValidateLoginInput(&input)
 	if err != nil {
 		response := models.Reply{
-			Message: "error validating user input",
+			Message: err.Error(),
 			Error:   err.Error(),
 			Success: false,
 		}
@@ -180,12 +202,20 @@ func Login(context *gin.Context) {
 			}
 			context.JSON(http.StatusBadRequest, response)
 			return
+		} else if user.Firstname == "" {
+			response := models.Reply{
+				Message: "user with that email does not exist",
+				Error:   errors.New("error fetching user").Error(),
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
 		}
 		// validate the password password passed with the harsh on db
 		err = user.ValidatePassword(input.Password)
 		if err != nil {
 			response := models.Reply{
-				Message: "incorrect details",
+				Message: "password incorrect",
 				Error:   err.Error(),
 				Success: false,
 			}
