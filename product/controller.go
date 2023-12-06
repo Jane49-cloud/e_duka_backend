@@ -441,6 +441,16 @@ func GetSingleAd(context *gin.Context) {
 			context.JSON(http.StatusBadRequest, response)
 			return
 		}
+		similarProducts, err := FetchSimilarProducts(productExist.Category)
+		if err != nil {
+			response := models.Reply{
+				Error:   err.Error(),
+				Message: "error finding the data",
+				Success: false,
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
+		}
 		sellerDetails := gin.H{
 			"seller_name":        currentuser.Firstname + " " + currentuser.Lastname,
 			"seller_email":       currentuser.Email,
@@ -450,9 +460,10 @@ func GetSingleAd(context *gin.Context) {
 		}
 
 		productData := gin.H{
-			"product_data":   productExist,
-			"seller_details": sellerDetails,
-			"product_images": images,
+			"product_data":     productExist,
+			"seller_details":   sellerDetails,
+			"product_images":   images,
+			"similar_products": similarProducts,
 		}
 
 		if err != nil {
@@ -573,15 +584,20 @@ func UpdateProduct(context *gin.Context) {
 					context.JSON(http.StatusBadRequest, response)
 					return
 				} else {
-					imageUrl, err := images.UploadHandler(productUpdate.ProductName, productUpdate.MainImage, context)
-					if err != nil {
-						response := models.Reply{
-							Message: "could not update product",
-							Error:   err.Error(),
-							Success: false,
+					var imageUrl = ""
+					if productUpdate.MainImage != "" {
+						imageUrl, err = images.UploadHandler(productUpdate.ProductName, productUpdate.MainImage, context)
+						if err != nil {
+							response := models.Reply{
+								Message: "could not update product",
+								Error:   err.Error(),
+								Success: false,
+							}
+							context.JSON(http.StatusBadRequest, response)
+							return
 						}
-						context.JSON(http.StatusBadRequest, response)
-						return
+					} else {
+						imageUrl = productExist.MainImage
 					}
 
 					newproduct := Product{

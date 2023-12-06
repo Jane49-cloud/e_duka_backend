@@ -2,6 +2,7 @@ package users
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -16,6 +17,7 @@ import (
 func Register(context *gin.Context) {
 	var input RegisterInput
 
+	fmt.Printf("user request one \n%v\n", input)
 	if err := context.ShouldBindJSON(&input); err != nil {
 		response := models.Reply{
 			Error:   err.Error(),
@@ -25,6 +27,7 @@ func Register(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response)
 		return
 	}
+	fmt.Printf("user request \n%v\n", input)
 	success, err := ValidateRegisterInput(&input)
 	if err != nil {
 
@@ -69,7 +72,7 @@ func Register(context *gin.Context) {
 		Firstname:       input.Firstname,
 		Lastname:        input.Lastname,
 		Location:        input.UserLocation,
-		Email:           input.Email,
+		Email:           strings.ToLower(input.Email),
 		UserImage:       imageUrl,
 		Phone:           input.Phone,
 		Password:        input.Password,
@@ -78,7 +81,7 @@ func Register(context *gin.Context) {
 		LastInteraction: formattedTime,
 	}
 
-	emailExists, err := FindUserByEmail(user.Email)
+	emailExists, err := FindUserByEmail(strings.ToLower(user.Email))
 
 	if err != nil {
 
@@ -160,7 +163,7 @@ func Register(context *gin.Context) {
 }
 func Login(context *gin.Context) {
 	var input LoginInput
-
+	fmt.Printf("user request one \n%v\n", input)
 	if err := context.ShouldBindJSON(&input); err != nil {
 		response := models.Reply{
 			Message: "error binding the user input",
@@ -170,6 +173,7 @@ func Login(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response)
 		return
 	}
+	fmt.Printf("user request one \n%v\n", input)
 	// check validity of user input
 	success, err := ValidateLoginInput(&input)
 	if err != nil {
@@ -181,9 +185,8 @@ func Login(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response)
 		return
 	} else if !success {
-
 		response := models.Reply{
-			Message: "could not validate date",
+			Message: "could not validate data",
 			Error:   errors.New("validation returned false").Error(),
 			Success: false,
 		}
@@ -335,7 +338,7 @@ func FetchSingleUser(context *gin.Context) {
 		}
 		response := models.Reply{
 			Message: "user fetched succesfully",
-			Data:    user.Token,
+			Data:    user,
 			Success: true,
 		}
 		context.JSON(http.StatusOK, response)
@@ -355,6 +358,7 @@ func UpdateUser(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response)
 		return
 	}
+	fmt.Printf("user update \n%v\n", userUpdateData)
 	thisUser, err := CurrentUser(context)
 	if err != nil {
 		response := models.Reply{
@@ -373,15 +377,31 @@ func UpdateUser(context *gin.Context) {
 		return
 	} else {
 		userid := context.Query("userid")
+		var imageUrl = ""
+
+		if userUpdateData.UserImage != "" {
+			imageUrl, err = images.UploadHandler(userUpdateData.Firstname+userUpdateData.Lastname, userUpdateData.UserImage, context)
+			if err != nil {
+				response := models.Reply{
+					Message: "main image not saved",
+					Success: false,
+					Error:   err.Error(),
+				}
+				context.JSON(http.StatusBadRequest, response)
+				return
+			}
+		} else {
+			imageUrl = thisUser.UserImage
+		}
 
 		query := strings.ReplaceAll(userid, "'", "")
 		newUser := User{
 			Firstname:  userUpdateData.Firstname,
 			Middlename: userUpdateData.Middlename,
 			Lastname:   userUpdateData.Lastname,
-			UserImage:  userUpdateData.UserImage,
+			UserImage:  imageUrl,
 			Location:   userUpdateData.Location,
-			Email:      userUpdateData.Email,
+			Email:      strings.ToLower(userUpdateData.Email),
 			Phone:      userUpdateData.Phone,
 		}
 		updateUser, err := UpdateUserUtil(query, newUser)
@@ -391,7 +411,7 @@ func UpdateUser(context *gin.Context) {
 				Success: false,
 				Error:   err.Error(),
 			}
-			context.JSON(http.StatusOK, response)
+			context.JSON(http.StatusBadRequest, response)
 			return
 		} else {
 			response := models.Reply{

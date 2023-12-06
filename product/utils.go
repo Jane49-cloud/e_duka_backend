@@ -58,6 +58,15 @@ func FetchAds() ([]Product, error) {
 
 	return productList, nil
 }
+func FetchSimilarProducts(category string) ([]Product, error) {
+	var productList []Product
+
+	err := database.Database.Where("category=?", category).Find(&productList).Error
+	if err != nil {
+		return []Product{}, err
+	}
+	return productList, nil
+}
 func FetchSingleUserAdsUtil(userid string) ([]Product, error) {
 	var productList []Product
 
