@@ -427,6 +427,8 @@ func UpdateUser(context *gin.Context) {
 func FetchSellers(context *gin.Context) {
 	users, err := FetchAllSellersUtil()
 
+	query := context.Query("top")
+
 	if err != nil {
 		response := models.Reply{
 			Error:   err.Error(),
@@ -436,8 +438,19 @@ func FetchSellers(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response)
 		return
 	} else {
+		var topSellers []User
+		if query != "" {
+			for _, seller := range users {
+				if strings.ToLower(seller.PackageType) != "basic" {
+					topSellers = append(topSellers, seller)
+				}
+			}
+		} else {
+			topSellers = users
+		}
+
 		response := models.Reply{
-			Data:    users,
+			Data:    topSellers,
 			Message: "succesfully fetched all users",
 			Success: true,
 		}
