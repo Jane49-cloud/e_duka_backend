@@ -13,6 +13,7 @@ import (
 	"eleliafrika.com/backend/database"
 	"eleliafrika.com/backend/images"
 	"eleliafrika.com/backend/mainad"
+	"eleliafrika.com/backend/packages"
 	"eleliafrika.com/backend/product"
 	subcategory "eleliafrika.com/backend/subcategories"
 	"eleliafrika.com/backend/users"
@@ -24,7 +25,7 @@ import (
 func LoadDatabase() {
 	database.Connect()
 	// database.Database.AutoMigrate(&models.ProductImage{}, &admin.SystemAdmin{}, &users.User{}, &models.Brand{}, &models.Category{}, &models.SubCategory{}, &models.Comment{}, &product.Product{})
-	// database.Database.AutoMigrate(&users.User{})
+	// database.Database.AutoMigrate(&packages.PackageModel{})
 
 }
 
@@ -59,6 +60,7 @@ func ServeApplication() {
 	admin.AdminRoutes(router)
 	conversation.ConversationRoutes(router)
 	chat.ChatRoutes(router)
+	packages.PackagesRoutes(router)
 
 	certFile := "./fullchain.pem"
 	keyFile := "./privkey.pem"
