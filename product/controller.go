@@ -258,8 +258,6 @@ func GetAllAds(context *gin.Context) {
 					}
 					if strings.ToLower(user.PackageType) != "basic" {
 						productList = append(productList, item)
-
-						fmt.Println(item.ProductName)
 					}
 				}
 			} else {
@@ -465,6 +463,29 @@ func GetSingleAd(context *gin.Context) {
 			return
 		}
 		similarProducts, err := FetchSimilarProducts(productExist.Category)
+
+		var productList []Product
+
+		for _, item := range similarProducts {
+			user, err := users.FindUserById(item.UserID)
+			if err != nil {
+				response := models.Reply{
+					Message: "error fetching user",
+					Success: false,
+					Error:   err.Error(),
+				}
+				context.JSON(http.StatusBadRequest, response)
+				return
+			}
+			if strings.ToLower(user.PackageType) != "basic" {
+				productList = append(productList, item)
+			}
+		}
+
+		if len(productList) < 1 {
+			productList = similarProducts
+		}
+
 		if err != nil {
 			response := models.Reply{
 				Error:   err.Error(),
@@ -486,7 +507,7 @@ func GetSingleAd(context *gin.Context) {
 			"product_data":     productExist,
 			"seller_details":   sellerDetails,
 			"product_images":   images,
-			"similar_products": similarProducts,
+			"similar_products": productList,
 		}
 
 		if err != nil {
