@@ -189,6 +189,19 @@ func AddProduct(context *gin.Context) {
 					}
 				}
 
+				_, err = users.UpdateUserUtil(user.UserID, users.User{
+					NoOfProducts: user.NoOfProducts + 1,
+				})
+				if err != nil {
+					response := models.Reply{
+						Message: "error login out user",
+						Error:   err.Error(),
+						Success: false,
+					}
+					context.JSON(http.StatusBadRequest, response)
+					return
+				}
+
 				response := models.Reply{
 					Message: "product has been added succesfully",
 					Success: true,
@@ -241,10 +254,7 @@ func GetAllAds(context *gin.Context) {
 		addedProducts := make(map[uint]bool)
 
 		if query != "" {
-
-			fmt.Println("packageModel")
 			if query == "top" {
-
 				for _, item := range products {
 					user, err := users.FindUserById(item.UserID)
 					if err != nil {
@@ -295,7 +305,6 @@ func GetAllAds(context *gin.Context) {
 								}
 							}
 						}
-
 					}
 
 					currentuser, err := users.FindUserById(string(item.UserID))
@@ -325,7 +334,6 @@ func GetAllAds(context *gin.Context) {
 		} else {
 			productList = products
 		}
-
 		var data []interface{}
 		for _, product := range productList {
 

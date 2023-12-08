@@ -439,7 +439,7 @@ func FetchSellers(context *gin.Context) {
 		return
 	} else {
 		var topSellers []User
-		if query != "" {
+		if strings.ReplaceAll(query, "'", "") == "top" {
 			for _, seller := range users {
 				if strings.ToLower(seller.PackageType) != "basic" {
 					topSellers = append(topSellers, seller)

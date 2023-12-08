@@ -127,8 +127,13 @@ func Register(context *gin.Context) {
 			return
 		}
 
+		userDetails := gin.H{
+			"token":      token,
+			"use_detail": admin,
+		}
+
 		response := models.Reply{
-			Data:    token,
+			Data:    userDetails,
 			Message: "admin added",
 			Success: true,
 		}
@@ -220,11 +225,18 @@ func Login(context *gin.Context) {
 				context.JSON(http.StatusBadRequest, response)
 				return
 			}
+
+			userDetails := gin.H{
+				"token":      token,
+				"use_detail": admin,
+			}
+
 			response := models.Reply{
-				Data:    token,
+				Data:    userDetails,
 				Message: "login succesfull",
 				Success: true,
 			}
+
 			context.JSON(http.StatusOK, response)
 			return
 		}
