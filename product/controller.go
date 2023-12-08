@@ -241,65 +241,88 @@ func GetAllAds(context *gin.Context) {
 		addedProducts := make(map[uint]bool)
 
 		if query != "" {
-			for _, item := range products {
-				splitName := strings.ReplaceAll(query, "and", "")
-				fmt.Println(splitName)
-				newQ := strings.Split(splitName, " ")
-				for _, segment := range newQ {
-					if segment != "" {
-						if strings.ToLower(item.ProductName) == segment || strings.Contains(strings.ToLower(item.ProductName), segment) {
-							if _, exists := addedProducts[item.ID]; !exists {
-								productList = append(productList, item)
-								addedProducts[item.ID] = true
-							}
-						} else if strings.ToLower(item.Category) == segment || strings.Contains(strings.ToLower(item.Category), segment) {
-							if _, exists := addedProducts[item.ID]; !exists {
-								productList = append(productList, item)
-								addedProducts[item.ID] = true
-							}
-						} else if strings.ToLower(item.SubCategory) == segment || strings.Contains(strings.ToLower(item.SubCategory), segment) {
-							if _, exists := addedProducts[item.ID]; !exists {
-								productList = append(productList, item)
-								addedProducts[item.ID] = true
-							}
-						} else if strings.ToLower(item.Brand) == segment || strings.Contains(strings.ToLower(item.Brand), segment) {
-							if _, exists := addedProducts[item.ID]; !exists {
-								productList = append(productList, item)
-								addedProducts[item.ID] = true
-							}
-						} else if strings.Contains(strings.ToLower(item.ProductDescription), segment) {
-							if _, exists := addedProducts[item.ID]; !exists {
-								productList = append(productList, item)
-								addedProducts[item.ID] = true
+
+			fmt.Println("packageModel")
+			if query == "top" {
+
+				for _, item := range products {
+					user, err := users.FindUserById(item.UserID)
+					if err != nil {
+						response := models.Reply{
+							Message: "error fetching user",
+							Success: false,
+							Error:   err.Error(),
+						}
+						context.JSON(http.StatusBadRequest, response)
+						return
+					}
+					if strings.ToLower(user.PackageType) != "basic" {
+						productList = append(productList, item)
+
+						fmt.Println(item.ProductName)
+					}
+				}
+			} else {
+
+				for _, item := range products {
+					splitName := strings.ReplaceAll(query, "and", "")
+					fmt.Println(splitName)
+					newQ := strings.Split(splitName, " ")
+					for _, segment := range newQ {
+						if segment != "" {
+							if strings.ToLower(item.ProductName) == segment || strings.Contains(strings.ToLower(item.ProductName), segment) {
+								if _, exists := addedProducts[item.ID]; !exists {
+									productList = append(productList, item)
+									addedProducts[item.ID] = true
+								}
+							} else if strings.ToLower(item.Category) == segment || strings.Contains(strings.ToLower(item.Category), segment) {
+								if _, exists := addedProducts[item.ID]; !exists {
+									productList = append(productList, item)
+									addedProducts[item.ID] = true
+								}
+							} else if strings.ToLower(item.SubCategory) == segment || strings.Contains(strings.ToLower(item.SubCategory), segment) {
+								if _, exists := addedProducts[item.ID]; !exists {
+									productList = append(productList, item)
+									addedProducts[item.ID] = true
+								}
+							} else if strings.ToLower(item.Brand) == segment || strings.Contains(strings.ToLower(item.Brand), segment) {
+								if _, exists := addedProducts[item.ID]; !exists {
+									productList = append(productList, item)
+									addedProducts[item.ID] = true
+								}
+							} else if strings.Contains(strings.ToLower(item.ProductDescription), segment) {
+								if _, exists := addedProducts[item.ID]; !exists {
+									productList = append(productList, item)
+									addedProducts[item.ID] = true
+								}
 							}
 						}
+
 					}
 
+					currentuser, err := users.FindUserById(string(item.UserID))
+					if err != nil {
+						response := models.Reply{
+							Error:   err.Error(),
+							Message: "error finding the seller",
+							Success: false,
+						}
+						context.JSON(http.StatusBadRequest, response)
+						return
+					} else {
+						fname := currentuser.Firstname
+						mName := currentuser.Middlename
+						lname := currentuser.Lastname
+
+						if strings.ToLower(fname) == query || strings.Contains(fname, query) {
+							productList = append(productList, item)
+						} else if strings.ToLower(lname) == query || strings.Contains(lname, query) {
+							productList = append(productList, item)
+						} else if strings.ToLower(mName) == query || strings.Contains(mName, query) {
+							productList = append(productList, item)
+						}
+					}
 				}
-
-				currentuser, err := users.FindUserById(string(item.UserID))
-				if err != nil {
-					response := models.Reply{
-						Error:   err.Error(),
-						Message: "error finding the seller",
-						Success: false,
-					}
-					context.JSON(http.StatusBadRequest, response)
-					return
-				} else {
-					fname := currentuser.Firstname
-					mName := currentuser.Middlename
-					lname := currentuser.Lastname
-
-					if strings.ToLower(fname) == query || strings.Contains(fname, query) {
-						productList = append(productList, item)
-					} else if strings.ToLower(lname) == query || strings.Contains(lname, query) {
-						productList = append(productList, item)
-					} else if strings.ToLower(mName) == query || strings.Contains(mName, query) {
-						productList = append(productList, item)
-					}
-				}
-
 			}
 		} else {
 			productList = products

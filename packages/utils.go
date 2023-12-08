@@ -2,7 +2,6 @@ package packages
 
 import (
 	"errors"
-	"fmt"
 
 	"eleliafrika.com/backend/database"
 )
@@ -14,7 +13,6 @@ func QuerySinglePackageUtil(id string) (PackageModel, error) {
 		return PackageModel{}, err
 
 	}
-	fmt.Println(packageModel)
 	return packageModel, nil
 }
 func QueryPackageByName(name string) (PackageModel, error) {
