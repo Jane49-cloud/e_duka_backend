@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"time"
 
+	"eleliafrika.com/backend/admin"
 	"eleliafrika.com/backend/category"
 	"eleliafrika.com/backend/models"
-	"eleliafrika.com/backend/users"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -47,7 +47,7 @@ func CreateMainAd(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response)
 		return
 	} else {
-		currentuser, err := users.CurrentUser(context)
+		currentuser, err := admin.CurrentUser(context)
 		if err != nil {
 			response := models.Reply{
 				Message: "could not find current user",
@@ -56,15 +56,15 @@ func CreateMainAd(context *gin.Context) {
 			}
 			context.JSON(http.StatusBadRequest, response)
 			return
-		} else if currentuser.Firstname == "" {
+		} else if currentuser.AdminName == "" {
 			response := models.Reply{
 				Message: "user not found",
 				Success: false,
 			}
-			context.JSON(http.StatusNetworkAuthenticationRequired, response)
+			context.JSON(http.StatusUnauthorized, response)
 			return
 		} else {
-			currentuserId = currentuser.UserID
+			currentuserId = currentuser.AdminID
 			newMainAd := models.MainAd{
 				Advertid:    adid.String(),
 				AdBy:        currentuserId,
@@ -221,7 +221,7 @@ func DeleteMainAd(context *gin.Context) {
 		context.JSON(http.StatusOK, response)
 		return
 	} else {
-		deletedAd, err := UpdateMainAdutil(query, models.MainAd{
+		_, err := UpdateMainAdutil(query, models.MainAd{
 			IsDeleted: true,
 		})
 		if err != nil {
@@ -236,7 +236,6 @@ func DeleteMainAd(context *gin.Context) {
 			response := models.Reply{
 				Message: "ad has been deleted succesfully",
 				Success: true,
-				Data:    deletedAd,
 			}
 			context.JSON(http.StatusOK, response)
 			return
@@ -274,7 +273,7 @@ func RestoreMainAd(context *gin.Context) {
 		context.JSON(http.StatusOK, response)
 		return
 	} else {
-		deletedAd, err := RestoreAdUtil(query)
+		_, err := RestoreAdUtil(query)
 		if err != nil {
 			response := models.Reply{
 				Message: "error restoring the ad",
@@ -287,7 +286,6 @@ func RestoreMainAd(context *gin.Context) {
 			response := models.Reply{
 				Message: "ad has been restored succesfully",
 				Success: true,
-				Data:    deletedAd,
 			}
 			context.JSON(http.StatusOK, response)
 			return
@@ -333,7 +331,7 @@ func ActivateMainAd(context *gin.Context) {
 		context.JSON(http.StatusOK, response)
 		return
 	} else {
-		activatedtedAd, err := UpdateMainAdutil(query, models.MainAd{
+		_, err := UpdateMainAdutil(query, models.MainAd{
 			AdActive: true,
 		})
 		if err != nil {
@@ -348,7 +346,6 @@ func ActivateMainAd(context *gin.Context) {
 			response := models.Reply{
 				Message: "ad has been activated succesfully",
 				Success: true,
-				Data:    activatedtedAd,
 			}
 			context.JSON(http.StatusOK, response)
 			return
@@ -386,7 +383,7 @@ func DeactivateMainAd(context *gin.Context) {
 		context.JSON(http.StatusOK, response)
 		return
 	} else {
-		deactivatedtedAd, err := DeactivateUtil(query)
+		_, err := DeactivateUtil(query)
 		if err != nil {
 			response := models.Reply{
 				Message: "error deactivating the ad",
@@ -399,7 +396,6 @@ func DeactivateMainAd(context *gin.Context) {
 			response := models.Reply{
 				Message: "ad has been deactivated succesfully",
 				Success: true,
-				Data:    deactivatedtedAd,
 			}
 			context.JSON(http.StatusOK, response)
 			return

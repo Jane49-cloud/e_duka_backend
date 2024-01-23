@@ -2,7 +2,6 @@ package product
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -238,6 +237,7 @@ func GetAllAds(context *gin.Context) {
 	var err error
 	query := context.Query("search")
 	query = strings.ReplaceAll(strings.ToLower(query), "'", "")
+	query = strings.ReplaceAll(strings.ToLower(query), "\"", "")
 
 	products, err := FetchAds()
 
@@ -274,7 +274,6 @@ func GetAllAds(context *gin.Context) {
 
 				for _, item := range products {
 					splitName := strings.ReplaceAll(query, "and", "")
-					fmt.Println(splitName)
 					newQ := strings.Split(splitName, " ")
 					for _, segment := range newQ {
 						if segment != "" {
@@ -334,6 +333,9 @@ func GetAllAds(context *gin.Context) {
 		} else {
 			productList = products
 		}
+		if len(productList) < 1 {
+			productList = products
+		}
 		var data []interface{}
 		for _, product := range productList {
 
@@ -361,6 +363,7 @@ func GetAllAds(context *gin.Context) {
 			Success: true,
 			Data:    data,
 		}
+
 		context.JSON(http.StatusOK, response)
 		return
 	}
@@ -777,7 +780,6 @@ func ActivateProduct(context *gin.Context) {
 	}
 }
 func DeactivateProduct(context *gin.Context) {
-	fmt.Println("deativating")
 	productid := context.Query("id")
 	query := "product_id=" + productid
 
@@ -840,7 +842,6 @@ func DeactivateProduct(context *gin.Context) {
 
 		} else {
 			response := models.Reply{
-				Data:    productExist,
 				Message: "succesfully deactivated the product",
 				Success: true,
 			}
@@ -870,26 +871,26 @@ func DeleteProduct(context *gin.Context) {
 		response := models.Reply{
 			Data:    Product{},
 			Message: "the product does not exist",
-			Success: true,
+			Success: false,
 		}
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	} else if productExist.IsDeleted {
 		response := models.Reply{
 			Data:    productExist,
 			Message: "product already deleted",
-			Success: true,
+			Success: false,
 		}
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 
 	} else if productExist.IsActive {
 		response := models.Reply{
 			Data:    productExist,
 			Message: "you cannot delete an active product!! Please deactivate the product first",
-			Success: true,
+			Success: false,
 		}
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	} else {
 		success, err := DeleteProductUtil(query)

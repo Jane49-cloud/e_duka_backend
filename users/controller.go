@@ -2,7 +2,6 @@ package users
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -17,7 +16,6 @@ import (
 func Register(context *gin.Context) {
 	var input RegisterInput
 
-	fmt.Printf("user request one \n%v\n", input)
 	if err := context.ShouldBindJSON(&input); err != nil {
 		response := models.Reply{
 			Error:   err.Error(),
@@ -27,7 +25,6 @@ func Register(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response)
 		return
 	}
-	fmt.Printf("user request \n%v\n", input)
 	success, err := ValidateRegisterInput(&input)
 	if err != nil {
 
@@ -127,7 +124,6 @@ func Register(context *gin.Context) {
 		return
 	} else {
 
-		// fmt.Println(input.Phone)
 		_, err := user.Save()
 		if err != nil {
 
@@ -163,7 +159,6 @@ func Register(context *gin.Context) {
 }
 func Login(context *gin.Context) {
 	var input LoginInput
-	fmt.Printf("user request one \n%v\n", input)
 	if err := context.ShouldBindJSON(&input); err != nil {
 		response := models.Reply{
 			Message: "error binding the user input",
@@ -173,7 +168,6 @@ func Login(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response)
 		return
 	}
-	fmt.Printf("user request one \n%v\n", input)
 	// check validity of user input
 	success, err := ValidateLoginInput(&input)
 	if err != nil {
@@ -261,7 +255,6 @@ func Login(context *gin.Context) {
 		context.JSON(http.StatusOK, response)
 	}
 }
-
 func GetSingleUser(context *gin.Context) {
 	user, err := CurrentUser(context)
 	if err != nil {
@@ -358,7 +351,6 @@ func UpdateUser(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response)
 		return
 	}
-	fmt.Printf("user update \n%v\n", userUpdateData)
 	thisUser, err := CurrentUser(context)
 	if err != nil {
 		response := models.Reply{
