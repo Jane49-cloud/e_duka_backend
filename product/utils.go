@@ -148,6 +148,20 @@ func ValidateProductInput(product *AddProductInput) (bool, error) {
 	}
 	return true, nil
 }
+
+func ValidateUserOwnsProduct(userId string, productUserId string) (bool, error) {
+	if userId == "" {
+		return false, errors.New("the user does not exist")
+	}
+	if productUserId == "" {
+		return false, errors.New("the product user does not exist")
+	}
+	if userId != productUserId {
+		return false, errors.New("the product does not belong to the user")
+	}
+	return true, nil
+}
+
 func UpdateProductUtil(query string, update Product) (Product, error) {
 	var updatedProduct Product
 
@@ -192,15 +206,34 @@ func RestoreProductUtil(query string) (bool, error) {
 	}
 	return true, nil
 }
-func ValidateUserOwnsProduct(userId string, productUserId string) (bool, error) {
-	if userId == "" {
-		return false, errors.New("the user does not exist")
+func CheckIfProductCountExist(userId string) (exist bool, err error) {
+	var productCount ProductCount
+	err = database.Database.Where("user_id=?", userId).Find(&productCount).Error
+	if err != nil {
+		return false, err
 	}
-	if productUserId == "" {
-		return false, errors.New("the product user does not exist")
-	}
-	if userId != productUserId {
-		return false, errors.New("the product does not belong to the user")
+	if productCount.UserID == "" {
+		return false, nil
 	}
 	return true, nil
+}
+func GetProductCountUtil(userId string) (productCount ProductCount, err error) {
+	err = database.Database.Where("user_id=?", userId).Find(&productCount).Error
+	if err != nil {
+		return ProductCount{}, err
+	}
+	return
+}
+func CheckProductCount(userId string) (count ProductCount, err error) {
+	productCount, err := GetProductCountUtil(userId)
+	return productCount, err
+}
+func UpdateProductCount(query string, update ProductCount) (productCount ProductCount, err error) {
+	var updatedProduct Product
+
+	result := database.Database.Model(&updatedProduct).Where(query).Updates(update)
+	if result.RowsAffected == 0 {
+		return ProductCount{}, errors.New("could not update the record")
+	}
+	return
 }

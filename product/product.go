@@ -52,3 +52,23 @@ func (product *Product) Save() (*Product, error) {
 	}
 	return product, nil
 }
+
+type ProductCount struct {
+	gorm.Model
+	Username          string `gorm:"column:username;not null;" json:"username"`
+	UserID            string `gorm:"column:user_id;not null;" json:"userId"`
+	TotalProducts     uint   `gorm:"column:total_products;default:0;" json:"totalProducts"`
+	ActiveProducts    uint   `gorm:"column:active_products;default:0;" json:"activeProducts"`
+	InActiveProducts  uint   `gorm:"column:in_active_products;default:0;" json:"inActiveProducts"`
+	DeletedProducts   uint   `gorm:"column:deleted_products;default:0;" json:"deletedProducts"`
+	SuspendedProducts uint   `gorm:"column:suspended_reached;default:0;" json:"suspendedProducts"`
+	LimitReached      bool   `gorm:"column:limit_reached;default:false;" json:"limitReached"`
+}
+
+func (productCount *ProductCount) Save() (*ProductCount, error) {
+	err := database.Database.Create(&productCount).Error
+	if err != nil {
+		return &ProductCount{}, err
+	}
+	return productCount, nil
+}

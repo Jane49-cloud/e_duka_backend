@@ -28,6 +28,34 @@ func AddProduct(context *gin.Context) {
 		return
 	}
 
+	// check if user has reached the count threshold
+	user, err := users.CurrentUser(context)
+	if err != nil {
+		response := models.Reply{
+			Message: "error fetching user",
+			Success: false,
+			Error:   err.Error(),
+		}
+		context.JSON(http.StatusUnauthorized, response)
+		return
+	} else if user.UserID == "" {
+		response := models.Reply{
+			Message: "user not found",
+			Success: false,
+			Error:   errors.New("user not found").Error(),
+		}
+		context.JSON(http.StatusUnauthorized, response)
+		return
+	}
+	if user.NoOfProducts > 20 {
+		context.JSON(http.StatusBadRequest, models.Reply{
+			Error:   errors.New("limit reached").Error(),
+			Message: "you have reached your limit for this package",
+			Success: false,
+		})
+		return
+	}
+
 	productuuid := uuid.New()
 	currentTime := time.Now()
 	formattedTime := currentTime.Format("2006-01-02 15:04:05")
@@ -52,164 +80,140 @@ func AddProduct(context *gin.Context) {
 		return
 	} else {
 
-		// get current user to add to userid field
-		user, err := users.CurrentUser(context)
+		// check if category exists
+		categoryExists, err := category.FetchSingleCategory(productInput.Category)
 		if err != nil {
 			response := models.Reply{
-				Message: "error fetching user",
+				Message: "error validating category",
 				Success: false,
-				Error:   err.Error(),
+				Error:   errors.New("error validating category").Error(),
 			}
-			context.JSON(http.StatusUnauthorized, response)
+			context.JSON(http.StatusBadRequest, response)
 			return
-		} else if user.Firstname == "" {
+		}
+		subCategoryExists, err := subcategory.FetchSingleSubCategory(productInput.SubCategory)
+		if err != nil {
 			response := models.Reply{
-				Message: "user not found",
+				Message: "error validating sub category",
 				Success: false,
-				Error:   errors.New("user not found").Error(),
+				Error:   errors.New("error validating sub category").Error(),
 			}
-			context.JSON(http.StatusUnauthorized, response)
+			context.JSON(http.StatusBadRequest, response)
 			return
+		}
 
-			// else if !user.IsApproved {
-			// 	globalutils.UnAuthorized(context)
-			// }
+		if categoryExists.CategoryName == "" {
+			response := models.Reply{
+				Message: "category not found",
+				Success: false,
+				Error:   errors.New("category not found").Error(),
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
+		} else if subCategoryExists.SubCategoryName == "" {
+			response := models.Reply{
+				Message: "sub category not found",
+				Success: false,
+				Error:   errors.New("sub category not found").Error(),
+			}
+			context.JSON(http.StatusBadRequest, response)
+			return
 		} else {
 
-			// check if category exists
-			categoryExists, err := category.FetchSingleCategory(productInput.Category)
+			imageUrl, err := images.UploadHandler(productInput.ProductName, productInput.MainImage, context)
 			if err != nil {
 				response := models.Reply{
-					Message: "error validating category",
+					Message: "main image not saved",
 					Success: false,
-					Error:   errors.New("error validating category").Error(),
+					Error:   err.Error(),
 				}
 				context.JSON(http.StatusBadRequest, response)
 				return
 			}
-			subCategoryExists, err := subcategory.FetchSingleSubCategory(productInput.SubCategory)
-			if err != nil {
-				response := models.Reply{
-					Message: "error validating sub category",
-					Success: false,
-					Error:   errors.New("error validating sub category").Error(),
-				}
-				context.JSON(http.StatusBadRequest, response)
-				return
+			product := Product{
+				ProductID:          productuuid.String(),
+				ProductName:        productInput.ProductName,
+				ProductPrice:       productInput.ProductPrice,
+				ProductDescription: productInput.ProductDescription,
+				UserID:             user.UserID,
+				MainImage:          imageUrl,
+				Quantity:           productInput.Quantity,
+				ProductType:        productInput.ProductType,
+				TotalLikes:         0,
+				TotalComments:      0,
+				DateAdded:          formattedTime,
+				LastUpdated:        formattedTime,
+				LatestInteractions: formattedTime,
+				TotalInteractions:  0,
+				TotalBookmarks:     0,
+				Brand:              productInput.Brand,
+				Category:           productInput.Category,
+				SubCategory:        productInput.SubCategory,
 			}
 
-			if categoryExists.CategoryName == "" {
+			savedProduct, err := product.Save()
+
+			if err != nil {
 				response := models.Reply{
-					Message: "category not found",
+					Message: "error uploading product images",
 					Success: false,
-					Error:   errors.New("category not found").Error(),
-				}
-				context.JSON(http.StatusBadRequest, response)
-				return
-			} else if subCategoryExists.SubCategoryName == "" {
-				response := models.Reply{
-					Message: "sub category not found",
-					Success: false,
-					Error:   errors.New("sub category not found").Error(),
+					Error:   err.Error(),
 				}
 				context.JSON(http.StatusBadRequest, response)
 				return
 			} else {
-
-				imageUrl, err := images.UploadHandler(productInput.ProductName, productInput.MainImage, context)
-				if err != nil {
-					response := models.Reply{
-						Message: "main image not saved",
-						Success: false,
-						Error:   err.Error(),
-					}
-					context.JSON(http.StatusBadRequest, response)
-					return
-				}
-				product := Product{
-					ProductID:          productuuid.String(),
-					ProductName:        productInput.ProductName,
-					ProductPrice:       productInput.ProductPrice,
-					ProductDescription: productInput.ProductDescription,
-					UserID:             user.UserID,
-					MainImage:          imageUrl,
-					Quantity:           productInput.Quantity,
-					ProductType:        productInput.ProductType,
-					TotalLikes:         0,
-					TotalComments:      0,
-					DateAdded:          formattedTime,
-					LastUpdated:        formattedTime,
-					LatestInteractions: formattedTime,
-					TotalInteractions:  0,
-					TotalBookmarks:     0,
-					Brand:              productInput.Brand,
-					Category:           productInput.Category,
-					SubCategory:        productInput.SubCategory,
-				}
-
-				savedProduct, err := product.Save()
-
-				if err != nil {
-					response := models.Reply{
-						Message: "error uploading product images",
-						Success: false,
-						Error:   err.Error(),
-					}
-					context.JSON(http.StatusBadRequest, response)
-					return
-				} else {
-					for _, i := range productInput.ProductImages {
-						imageUrl, err := images.UploadHandler(productInput.ProductName, i, context)
-						if err != nil {
-							response := models.Reply{
-								Message: "error with saving image",
-								Success: false,
-								Error:   err.Error(),
-							}
-							context.JSON(http.StatusBadRequest, response)
-							return
+				for _, i := range productInput.ProductImages {
+					imageUrl, err := images.UploadHandler(productInput.ProductName, i, context)
+					if err != nil {
+						response := models.Reply{
+							Message: "error with saving image",
+							Success: false,
+							Error:   err.Error(),
 						}
-						imageuuid := uuid.New()
-						image := models.ProductImage{
-							ImageID:   imageuuid.String(),
-							ProductID: productuuid.String(),
-							ImageUrl:  imageUrl,
+						context.JSON(http.StatusBadRequest, response)
+						return
+					}
+					imageuuid := uuid.New()
+					image := models.ProductImage{
+						ImageID:   imageuuid.String(),
+						ProductID: productuuid.String(),
+						ImageUrl:  imageUrl,
+					}
+					_, err = image.Save()
+					if err != nil {
+						response := models.Reply{
+							Message: "error with saving image",
+							Success: false,
+							Error:   err.Error(),
 						}
-						_, err = image.Save()
-						if err != nil {
-							response := models.Reply{
-								Message: "error with saving image",
-								Success: false,
-								Error:   err.Error(),
-							}
-							context.JSON(http.StatusBadRequest, response)
-							return
-						}
+						context.JSON(http.StatusBadRequest, response)
+						return
 					}
 				}
+			}
 
-				_, err = users.UpdateUserUtil(user.UserID, users.User{
-					NoOfProducts: user.NoOfProducts + 1,
-				})
-				if err != nil {
-					response := models.Reply{
-						Message: "error login out user",
-						Error:   err.Error(),
-						Success: false,
-					}
-					context.JSON(http.StatusBadRequest, response)
-					return
-				}
-
+			_, err = users.UpdateUserUtil(user.UserID, users.User{
+				NoOfProducts: user.NoOfProducts + 1,
+			})
+			if err != nil {
 				response := models.Reply{
-					Message: "product has been added succesfully",
-					Success: true,
-					Data:    savedProduct,
+					Message: "error login out user",
+					Error:   err.Error(),
+					Success: false,
 				}
-				context.JSON(http.StatusCreated, response)
+				context.JSON(http.StatusBadRequest, response)
 				return
 			}
+
+			response := models.Reply{
+				Message: "product has been added succesfully",
+				Success: true,
+				Data:    savedProduct,
+			}
+			context.JSON(http.StatusCreated, response)
+			return
 		}
+
 	}
 }
 func GetAllProducts(context *gin.Context) {
